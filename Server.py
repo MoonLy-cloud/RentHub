@@ -1,3 +1,4 @@
+import os
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
@@ -15,4 +16,9 @@ async def read_root(request: Request):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    host = "127.0.0.1"
+    port = 8000
+    if os.name == "nt":  # Windows
+        uvicorn.run(app, host=host, port=port, log_level="info")
+    else:  # Linux and other OS
+        uvicorn.run(app, host=host, port=port, log_level="info", reload=True)
