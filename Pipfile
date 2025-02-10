@@ -21,6 +21,7 @@ starlette = "==0.45.3"
 typing-extensions = "==4.12.2"
 virtualenv = "==20.29.1"
 uvicorn = "*"
+sqlalchemy = "*"
 
 [dev-packages]
 
