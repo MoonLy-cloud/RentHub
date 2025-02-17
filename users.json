@@ -12,5 +12,19 @@
         "confirmPassword": "sfnj",
         "name": "lkcdlsdn",
         "lastname": "bcnjnjds"
+    },
+    {
+        "email": "DOGOCORP@GMAIL.COM",
+        "password": "1234",
+        "confirmPassword": "1234",
+        "name": "askjdbasbj",
+        "lastname": "adskdasjk"
+    },
+    {
+        "email": "DOGOCORP@GMAIL.COM",
+        "password": "1234",
+        "confirmPassword": "1234",
+        "name": "njdsnd",
+        "lastname": "kjfdsnk"
     }
 ]

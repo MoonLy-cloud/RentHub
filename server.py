@@ -18,7 +18,6 @@ def read_root():
 def read_root():
     return FileResponse("templates/RegisterUser.html")
 
-
 @app.post("/registro")
 async def register_user(request: Request):
     # Get user data from request body

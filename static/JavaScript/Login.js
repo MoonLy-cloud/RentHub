@@ -20,3 +20,15 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+document.addEventListener('DOMContentLoaded', function() {
+    const registerLink = document.getElementById('signup-link');
+
+    if (registerLink) {
+        registerLink.addEventListener('click', function(event) {
+            event.preventDefault();
+            window.location.href = '/registro';
+        });
+    } else {
+        console.error('El enlace de registro no se encontró en el DOM');
+    }
+});
