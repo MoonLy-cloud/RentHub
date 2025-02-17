@@ -14,7 +14,7 @@ def read_root():
 
 @app.get("/registro")
 def read_root():
-    return FileResponse("templates/registro.html")
+    return FileResponse("templates/RegisterUser.html")
 
 @app.get("/login")
 def read_root():
