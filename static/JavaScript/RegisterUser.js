@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const nameInput = document.getElementById('first-name');
             const lastnameInput = document.getElementById('last-name');
 
-            user = {
+            let user = {
                 email: email.value,
                 password: password.value,
                 confirmPassword: confirmPassword.value,
@@ -19,15 +19,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 lastname: lastnameInput.value
             };
 
-            registerUser(user);
-
-
-            console.log(email.value);
-            console.log(password.value);
-            console.log(confirmPassword.value);
-            console.log(nameInput.value);
-            console.log(lastnameInput.value);
-
+            if (!validatePassword(password.value, confirmPassword.value)) {
+                alert('Las contraseñas no coinciden');
+            } else {
+                registerUser(user);
+            }
 
         });
     } else {
@@ -35,8 +31,21 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+document.addEventListener('DOMContentLoaded', function() {
+    const loginLink = document.getElementById('login-link');
+
+    if (loginLink) {
+        loginLink.addEventListener('click', function(event) {
+            event.preventDefault();
+            window.location.href = '/login';
+        });
+    } else {
+        console.error('El enlace de inicio no se encontró en el DOM');
+    }
+});
+
 function registerUser(user) {
-    fetch('/registro', {
+    fetch('/register', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -50,4 +59,8 @@ function registerUser(user) {
     .catch((error) => {
         console.error('Error:', error);
     });
+}
+
+function validatePassword(password, confirmPassword) {
+    return password === confirmPassword;
 }

@@ -10,16 +10,15 @@ app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
-@app.get("/inicio")
+@app.get("/")
 def read_root():
     return FileResponse("templates/index.html")
 
-@app.get("/registro")
+@app.get("/register")
 def read_root():
     return FileResponse("templates/RegisterUser.html")
 
-
-@app.post("/registro")
+@app.post("/register")
 async def register_user(request: Request):
     # Get user data from request body
     user_data = await request.json()
@@ -49,6 +48,22 @@ async def register_user(request: Request):
 def read_root():
     return FileResponse("templates/Login.html")
 
+
+@app.post("/login")  # Cambiado de GET a POST
+async def login_user(request: Request):
+    user_data = await request.json()
+
+    json_file = "users.json"
+
+    with open(json_file, "r") as f:
+        users = json.load(f)
+
+    for user in users:
+        if user["email"] == user_data["username"] and user["password"] == user_data["password"]:
+            return {"message": "Usuario autenticado exitosamente"}
+
+    return {"message": "Credenciales incorrectas"}
+
 @app.get("/propiedades")
 def read_root():
     return FileResponse("templates/propiedades.html")
@@ -59,4 +74,4 @@ def read_root():
 
 @app.get("/dashboard_usuario")
 def read_root():
-    return FileResponse("templates/dashboard_usuario.html")
+    return FileResponse("templates/Dashboard_usuario.html")
