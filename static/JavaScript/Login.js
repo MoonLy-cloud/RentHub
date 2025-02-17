@@ -10,8 +10,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const user = { username: emailInput.value, password: passwordInput.value };
 
-            console.log(emailInput.value);
-            console.log(passwordInput.value);
+            if (emailInput.value === '' || passwordInput.value === '') {
+                alert('Por favor, llena todos los campos');
+            } else {
+                login_user(user);
+            }
 
 
         });
@@ -26,9 +29,31 @@ document.addEventListener('DOMContentLoaded', function() {
     if (registerLink) {
         registerLink.addEventListener('click', function(event) {
             event.preventDefault();
-            window.location.href = '/registro';
+            window.location.href = '/register';
         });
     } else {
         console.error('El enlace de registro no se encontró en el DOM');
     }
 });
+
+function login_user(user) {
+    try{
+        const response = fetch('/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(user)
+        });
+
+        if(response.status === 200){
+            alert('Inicio de sesión exitoso');
+        } else {
+            alert('Usuario o contraseña incorrectos');
+        }
+    }
+    catch(error){
+        console.error('Error:', error);
+        return false;
+    }
+}

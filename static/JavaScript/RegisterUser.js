@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function registerUser(user) {
-    fetch('/registro', {
+    fetch('/register', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
