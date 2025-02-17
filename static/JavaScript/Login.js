@@ -36,24 +36,27 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-function login_user(user) {
-    try{
-        const response = fetch('/login', {
-            method: 'POST',
+async function login_user(user) {
+    try {
+        const response = await fetch('/login', {
+            method: 'POST',  // Cambiado a POST ya que enviamos datos
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify(user)
         });
 
-        if(response.status === 200){
+        const data = await response.json();
+
+        if (response.ok) {
             alert('Inicio de sesión exitoso');
+            // Redirigir al usuario según sea necesario
+            window.location.href = '/';
         } else {
             alert('Usuario o contraseña incorrectos');
         }
-    }
-    catch(error){
+    } catch (error) {
         console.error('Error:', error);
-        return false;
+        alert('Error al iniciar sesión');
     }
 }
