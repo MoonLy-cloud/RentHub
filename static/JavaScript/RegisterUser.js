@@ -5,24 +5,31 @@ document.addEventListener('DOMContentLoaded', function() {
         form.addEventListener('submit', (event) => {
             event.preventDefault();
 
+            const name = document.getElementById('first-name');
+            const lastName = document.getElementById('last-name');
+            const secondLastName = document.getElementById('second-last-name');
+            const gender = document.getElementById('type-Gender');
+            const typeUser = document.getElementById('type-User');
             const email = document.getElementById('email');
             const password = document.getElementById('password');
             const confirmPassword = document.getElementById('confirm-password');
-            const nameInput = document.getElementById('first-name');
-            const lastnameInput = document.getElementById('last-name');
 
             let user = {
+                name: name.value,
+                lastName: lastName.value,
+                secondLastName: secondLastName.value,
+                gender: gender.value,
+                typeUser: typeUser.value,
                 email: email.value,
                 password: password.value,
-                confirmPassword: confirmPassword.value,
-                name: nameInput.value,
-                lastname: lastnameInput.value
+                confirmPassword: confirmPassword.value
             };
 
             if (!validatePassword(password.value, confirmPassword.value)) {
                 alert('Las contraseñas no coinciden');
             } else {
                 registerUser(user);
+                alert('Usuario registrado exitosamente');
             }
 
         });

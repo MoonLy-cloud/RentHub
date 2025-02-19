@@ -27,6 +27,14 @@ async def register_user(request: Request):
     # Get user data from request body
     user_data = await request.json()
 
+    # Validate user no duplicated
+    json_file = "users.json"
+    with open(json_file, "r") as f:
+        users = json.load(f)
+        for user in users:
+            if user["email"] == user_data["email"]:
+                return JSONResponse(status_code=400, content={"message": "Usuario ya registrado"})
+
     # Define the path to the JSON file
     json_file = "users.json"
 
