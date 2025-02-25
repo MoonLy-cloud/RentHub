@@ -59,13 +59,22 @@ function registerUser(user) {
         },
         body: JSON.stringify(user)
     })
-    .then((response) => response.json())
-    .then((data) => {
-        console.log(data);
-    })
-    .catch((error) => {
-        console.error('Error:', error);
-    });
+        .then((response) => {
+            if (!response.ok) {
+                return response.json().then((error) => {
+                    throw new Error(error.message || 'Error en la solicitud');
+                });
+            }
+            return response.json();
+        })
+        .then((data) => {
+            console.log(data);
+            alert('Usuario registrado exitosamente');
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+            alert(`Error al registrar usuario: ${error.message}`);
+        });
 }
 
 function validatePassword(password, confirmPassword) {

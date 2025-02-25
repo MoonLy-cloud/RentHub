@@ -61,5 +61,25 @@
         "confirmPassword": "1234",
         "name": "almsdkasmd",
         "lastname": "oansndo"
+    },
+    {
+        "name": "asda",
+        "lastName": "sasda",
+        "secondLastName": "dsadas",
+        "gender": "1",
+        "typeUser": "1",
+        "email": "DOGOCORP@GMAIL.COM",
+        "password": "1234",
+        "confirmPassword": "1234"
+    },
+    {
+        "name": "asda",
+        "lastName": "sasda",
+        "secondLastName": "dsadas",
+        "gender": "1",
+        "typeUser": "1",
+        "email": "DOGOCORP@GMAIL.COM",
+        "password": "1234",
+        "confirmPassword": "1234"
     }
 ]

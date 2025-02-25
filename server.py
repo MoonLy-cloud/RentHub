@@ -1,3 +1,5 @@
+from urllib import request
+
 from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import JSONResponse
@@ -24,37 +26,18 @@ def read_root():
 # Manejo del registor del usuario
 @app.post("/register")
 async def register_user(request: Request):
-    # Get user data from request body
     user_data = await request.json()
-
-    # Validate user no duplicated
-    json_file = "users.json"
-    with open(json_file, "r") as f:
-        users = json.load(f)
-        for user in users:
-            if user["email"] == user_data["email"]:
-                return JSONResponse(status_code=400, content={"message": "Usuario ya registrado"})
-
-    # Define the path to the JSON file
     json_file = "users.json"
 
-    # Create empty users list if file doesn't exist
-    if not os.path.exists(json_file):
-        with open(json_file, "w") as f:
-            json.dump([], f)
-
-    # Read existing users
     with open(json_file, "r") as f:
         users = json.load(f)
 
-    # Add new user
     users.append(user_data)
 
-    # Save updated users list
     with open(json_file, "w") as f:
         json.dump(users, f, indent=4)
 
-    return {"message": "Usuario registrado exitosamente"}
+    return JSONResponse(status_code=201, content={"message": "Usuario registrado exitosamente"})
 
 # Ruta de formulario de login
 @app.get("/login")
