@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 confirmPassword: confirmPassword.value
             };
 
-            if (!validatePassword(password.value, confirmPassword.value)) {
+            if (password.value !== confirmPassword.value) {
                 alert('Las contraseñas no coinciden');
             } else {
                 registerUser(user);
@@ -70,11 +70,4 @@ function registerUser(user) {
             console.error('Error:', error);
             alert('Error al registrar usuario');
         });
-}
-
-function validatePassword(password, confirmPassword) {
-    if (password === confirmPassword){
-        return true;
-    }
-    return false;
 }
