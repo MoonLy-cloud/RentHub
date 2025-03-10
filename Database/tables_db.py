@@ -18,7 +18,6 @@ class Usuario(Base):
     nombre = Column(String)
     apellido_p = Column(String)
     apellido_m = Column(String)
-    genero = Column(String)
     correo = Column(String)
     contrasena = Column(String)
     contrasena_confirmacion = Column(String)

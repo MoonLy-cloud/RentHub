@@ -16,7 +16,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 name: name.value,
                 lastName: lastName.value,
                 secondLastName: secondLastName.value,
-                email: email.value,
+                email: (() => {
+                    const [localPart, domainPart] = email.value.split('@');
+                    return `${localPart}@${domainPart.toLowerCase()}`;
+                })(),
                 password: password.value,
                 confirmPassword: confirmPassword.value
             };
@@ -25,9 +28,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 alert('Las contraseñas no coinciden');
             } else {
                 registerUser(user);
-                alert('Usuario registrado exitosamente');
             }
-
         });
     } else {
         console.error('El formulario no se encontró en el DOM');
@@ -56,20 +57,18 @@ function registerUser(user) {
         body: JSON.stringify(user)
     })
         .then((response) => {
-            if (!response.ok) {
-                return response.json().then((error) => {
-                    throw new Error(error.message || 'Error en la solicitud');
-                });
+            const status = response.status;
+            if (status === 400) {
+                alert('Usuario ya existente');
+            } else if (status === 200) {
+                alert('Usuario registrado correctamente');
+            } else {
+                throw new Error('Error en la solicitud');
             }
-            return response.json();
-        })
-        .then((data) => {
-            console.log(data);
-            alert('Usuario registrado exitosamente');
         })
         .catch((error) => {
             console.error('Error:', error);
-            alert(`Error al registrar usuario: ${error.message}`);
+            alert('Error al registrar usuario');
         });
 }
 

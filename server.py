@@ -14,29 +14,38 @@ app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
+
 # Raiz del proyecto
 @app.get("/")
 def read_root():
     return FileResponse("templates/index.html")
+
 
 # Ruta de formulario de registro
 @app.get("/register")
 def read_root():
     return FileResponse("templates/RegisterUser.html")
 
-# Manejo del registor del usuario
+
+# Manejo del registro del usuario
 @app.post("/register")
 async def register_user(request: Request):
     user_data = await request.json()
-    db.guardar_usuario(user_data["name"], user_data["lastName"], user_data["secondLastName"], user_data["email"], user_data["password"], user_data["confirmPassword"])
 
-    return JSONResponse(status_code=200, content={"message": "Usuario registrado exitosamente"})
+    #Verificar si el usuario ya existe
+    if db.usuario_existe(user_data["email"]):
+        return JSONResponse(status_code=400, content={"message": "Usuario ya Existente"})
+    else:
+        db.guardar_usuario(user_data["name"], user_data["lastName"], user_data["secondLastName"], user_data["email"],
+                           user_data["password"], user_data["confirmPassword"])
+        return JSONResponse(status_code=200, content={"message": "Usuario ya Existente"})
 
 
 # Ruta de formulario de login
 @app.get("/login")
 def read_root():
     return FileResponse("templates/Login.html")
+
 
 # Manejo del acceso a la cuenta de usuario
 @app.post("/login")
@@ -53,9 +62,11 @@ async def login_user(request: Request):
 
     return JSONResponse(status_code=401, content={"message": "Credenciales incorrectas"})
 
+
 @app.get("/propiedades")
 def read_root():
     return FileResponse("templates/propiedades.html")
+
 
 @app.get("/dashboard_dueno")
 def read_root():

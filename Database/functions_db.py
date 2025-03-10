@@ -16,12 +16,11 @@ Base.metadata.create_all(engine)
 Session = sessionmaker(bind=engine)
 session = Session()
 
-def guardar_usuario(nombre, apellido_p, apellido_m, genero,correo, contrasena, contrasena_confirmacion):
+def guardar_usuario(nombre, apellido_p, apellido_m, correo, contrasena, contrasena_confirmacion):
     usuario = Usuario(
         nombre=nombre,
         apellido_p=apellido_p,
         apellido_m=apellido_m,
-        genero=genero,
         correo=correo,
         contrasena=contrasena,
         contrasena_confirmacion=contrasena_confirmacion
@@ -32,3 +31,5 @@ def guardar_usuario(nombre, apellido_p, apellido_m, genero,correo, contrasena, c
 
     return usuario
 
+def usuario_existe(correo):
+    return session.query(Usuario).filter(Usuario.correo == correo).count() > 0
