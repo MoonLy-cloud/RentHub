@@ -5,6 +5,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import JSONResponse
 from fastapi.templating import Jinja2Templates
 from starlette.responses import FileResponse
+import Database.functions_db as db
 import json
 import os
 
@@ -27,17 +28,10 @@ def read_root():
 @app.post("/register")
 async def register_user(request: Request):
     user_data = await request.json()
-    json_file = "users.json"
+    db.guardar_usuario(user_data["name"], user_data["lastName"], user_data["secondLastName"], user_data["gender"], user_data["email"], user_data["password"], user_data["confirmPassword"])
 
-    with open(json_file, "r") as f:
-        users = json.load(f)
+    return JSONResponse(status_code=200, content={"message": "Usuario registrado exitosamente"})
 
-    users.append(user_data)
-
-    with open(json_file, "w") as f:
-        json.dump(users, f, indent=4)
-
-    return JSONResponse(status_code=201, content={"message": "Usuario registrado exitosamente"})
 
 # Ruta de formulario de login
 @app.get("/login")

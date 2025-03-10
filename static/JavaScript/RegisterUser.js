@@ -8,8 +8,6 @@ document.addEventListener('DOMContentLoaded', function() {
             const name = document.getElementById('first-name');
             const lastName = document.getElementById('last-name');
             const secondLastName = document.getElementById('second-last-name');
-            const gender = document.getElementById('type-Gender');
-            const typeUser = document.getElementById('type-User');
             const email = document.getElementById('email');
             const password = document.getElementById('password');
             const confirmPassword = document.getElementById('confirm-password');
@@ -18,8 +16,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 name: name.value,
                 lastName: lastName.value,
                 secondLastName: secondLastName.value,
-                gender: gender.value,
-                typeUser: typeUser.value,
                 email: email.value,
                 password: password.value,
                 confirmPassword: confirmPassword.value

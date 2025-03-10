@@ -18,7 +18,10 @@ class Usuario(Base):
     nombre = Column(String)
     apellido_p = Column(String)
     apellido_m = Column(String)
+    genero = Column(String)
     correo = Column(String)
+    contrasena = Column(String)
+    contrasena_confirmacion = Column(String)
     id_metodo_pago = Column(Integer, ForeignKey('metodo_pago.id_metodo_pago'))
 
     metodo_pago = relationship("MetodoPago")
@@ -82,3 +85,16 @@ class Transaccion(Base):
     usuario = relationship("Usuario")
     propiedad = relationship("Propiedad")
     cliente_dueno = relationship("ClienteDueno")
+
+if __name__ == "__main__":
+    from sqlalchemy import create_engine
+    from sqlalchemy.orm import sessionmaker
+    import os
+
+    db_path = os.path.join(os.path.dirname(__file__), 'database.db')
+    engine = create_engine(f'sqlite:///{db_path}')
+
+    Base.metadata.create_all(engine)
+
+    Session = sessionmaker(bind=engine)
+    session = Session()
