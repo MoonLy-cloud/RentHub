@@ -28,7 +28,7 @@ def read_root():
 @app.post("/register")
 async def register_user(request: Request):
     user_data = await request.json()
-    db.guardar_usuario(user_data["name"], user_data["lastName"], user_data["secondLastName"], user_data["gender"], user_data["email"], user_data["password"], user_data["confirmPassword"])
+    db.guardar_usuario(user_data["name"], user_data["lastName"], user_data["secondLastName"], user_data["email"], user_data["password"], user_data["confirmPassword"])
 
     return JSONResponse(status_code=200, content={"message": "Usuario registrado exitosamente"})
 

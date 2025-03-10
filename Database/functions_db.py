@@ -31,3 +31,4 @@ def guardar_usuario(nombre, apellido_p, apellido_m, genero,correo, contrasena, c
     session.commit()
 
     return usuario
+
