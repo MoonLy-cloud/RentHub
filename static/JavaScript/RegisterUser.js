@@ -74,5 +74,8 @@ function registerUser(user) {
 }
 
 function validatePassword(password, confirmPassword) {
-    return password === confirmPassword;
+    if (password === confirmPassword){
+        return true;
+    }
+    return false;
 }
