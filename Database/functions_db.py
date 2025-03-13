@@ -33,3 +33,6 @@ def guardar_usuario(nombre, apellido_p, apellido_m, correo, contrasena, contrase
 
 def usuario_existe(correo):
     return session.query(Usuario).filter(Usuario.correo == correo).count() > 0
+
+def verificar_contrasena(correo, contrasena):
+    return session.query(Usuario).filter(Usuario.correo == correo, Usuario.contrasena == contrasena).count() > 0

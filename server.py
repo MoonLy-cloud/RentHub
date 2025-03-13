@@ -51,16 +51,15 @@ def read_root():
 @app.post("/login")
 async def login_user(request: Request):
     user_data = await request.json()
-    json_file = "users.json"
 
-    with open(json_file, "r") as f:
-        users = json.load(f)
+    if db.usuario_existe(user_data["email"]):
+        if db.verificar_contrasena(user_data["email"], user_data["password"]):
+            return JSONResponse(status_code=200, content={"message": "Usuario Logeado"})
+        else:
+            return JSONResponse(status_code=400, content={"message": "Contraseña Incorrecta"})
+    else:
+        return JSONResponse(status_code=404, content={"message": "Usuario no encontrado"})
 
-    for user in users:
-        if user["email"] == user_data["username"] and user["password"] == user_data["password"]:
-            return JSONResponse(status_code=200, content={"message": "Usuario autenticado exitosamente"})
-
-    return JSONResponse(status_code=401, content={"message": "Credenciales incorrectas"})
 
 
 @app.get("/propiedades")
