@@ -42,11 +42,12 @@ class Propiedad(Base):
     __tablename__ = 'propiedad'
     id_propiedad = Column(Integer, primary_key=True)
     nombre = Column(String)
+    direccion = Column(String)
     descripcion = Column(String)
-    ubicacion = Column(String)
-    capacidad = Column(Integer)
     precio = Column(Float)
-    id_cliente_dueno = Column(Integer, ForeignKey('cliente_dueno.id_cliente_dueno'))
+    imagen = Column(String)
+    disponible = Column(Integer)
+    id_propietario = Column(Integer, ForeignKey('cliente_dueno.id_cliente_dueno'))
 
     dueno = relationship("ClienteDueno", back_populates="propiedades")
     usuarios = relationship("Usuario", secondary=renta_propiedad, back_populates="propiedades")
