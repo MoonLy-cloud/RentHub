@@ -1,21 +1,5 @@
 document.addEventListener('DOMContentLoaded', function() {
     const propertyList = document.getElementById('property-list');
-    let usuarioAutenticado = false;
-
-    // Verificar autenticación primero
-    async function verificarYCargarPropiedades() {
-        try {
-            const authResponse = await fetch('/api/usuario');
-            usuarioAutenticado = authResponse.ok;
-
-            // Cargar propiedades independientemente del estado de autenticación
-            cargarPropiedades();
-        } catch (error) {
-            console.error('Error:', error);
-            usuarioAutenticado = false;
-            cargarPropiedades();
-        }
-    }
 
     async function cargarPropiedades() {
         try {
@@ -64,17 +48,11 @@ document.addEventListener('DOMContentLoaded', function() {
         document.querySelectorAll('.ver-detalles').forEach(button => {
             button.addEventListener('click', function() {
                 const propiedadId = this.getAttribute('data-id');
-
-                if (usuarioAutenticado) {
-                    window.location.href = `/propiedad/${propiedadId}`;
-                } else {
-                    alert('Debes iniciar sesión para ver los detalles de esta propiedad');
-                    window.location.href = '/login';
-                }
+                window.location.href = `/propiedad/${propiedadId}`;
             });
         });
     }
 
-    // Iniciar la verificación y carga
-    verificarYCargarPropiedades();
+    // Cargar propiedades al iniciar
+    cargarPropiedades();
 });

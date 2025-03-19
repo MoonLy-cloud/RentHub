@@ -55,18 +55,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const usernameDisplay = document.getElementById('username-display');
         if (usernameDisplay) {
             usernameDisplay.textContent = usuario.nombre || sessionStorage.getItem('username');
-
-            // Mejorar estilo del contenedor
-            const userProfileContainer = usernameDisplay.closest('.nav-item');
-            if (userProfileContainer) {
-                userProfileContainer.classList.add('user-profile-active');
-            }
-        }
-
-        // Mejorar estilo del botón de cerrar sesión
-        const logoutBtn = document.querySelector('.auth-required .btn-outline-danger');
-        if (logoutBtn && logoutBtn.parentElement) {
-            logoutBtn.parentElement.classList.add('logout-btn-container');
         }
     }
 
@@ -83,7 +71,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Evento para cerrar sesión
-    const logoutBtn = document.querySelector('a[href="/logout"]');
+    const logoutBtn = document.getElementById('logout-btn');
     if (logoutBtn) {
         logoutBtn.addEventListener('click', function(e) {
             e.preventDefault();

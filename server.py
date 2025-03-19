@@ -96,6 +96,9 @@ async def register_user(request: Request):
         return JSONResponse(status_code=200, content={"message": "Usuario registrado correctamente"})
 
 
+@app.get("/publicar")
+def read_root():
+    return FileResponse("templates/Publicar.html")
 # Ruta de formulario de login
 @app.get("/login")
 def read_root():
@@ -169,13 +172,6 @@ async def get_mis_propiedades(user_data: Optional[dict] = Depends(verify_token))
 
     propiedades = db.obtener_propiedades_por_usuario(user_data["id"])
     return JSONResponse(status_code=200, content={"propiedades": propiedades})
-
-
-@app.get("/dashboard_user")
-def read_root(user_data: Optional[dict] = Depends(verify_token)):
-    if not user_data:
-        return RedirectResponse(url="/login")
-    return FileResponse("templates/dashboard_user.html")
 
 
 @app.post("/api/propiedades")
