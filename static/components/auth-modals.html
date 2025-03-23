@@ -1,0 +1,113 @@
+<!-- Modal de Login -->
+<div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="auth-modal-container">
+        <div class="left-modal-panel">
+          <div class="left-content">
+            <div class="logo-container">
+              <img src="../static/imgs/logo.png" alt="RentHub" class="logo">
+            </div>
+            <h2 class="welcome-text">¡Bienvenido de vuelta!</h2>
+            <p class="welcome-description">Encuentra el lugar perfecto para rentar con nosotros</p>
+          </div>
+        </div>
+        <div class="right-modal-panel">
+          <button type="button" class="btn-close close-modal-btn" data-bs-dismiss="modal" aria-label="Close"></button>
+          <div class="form-container">
+            <h1 class="auth-title">Iniciar Sesión</h1>
+            <form id="login-modal-form">
+              <div class="form-group">
+                <label for="email-modal">Correo electrónico</label>
+                <div class="input-icon">
+                  <i class="icon email-icon">✉️</i>
+                  <input type="email" id="email-modal" required placeholder="Ingresa tu correo electrónico">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="password-modal">Contraseña</label>
+                <div class="input-icon">
+                  <i class="icon lock-icon">🔒</i>
+                  <input type="password" id="password-modal" required placeholder="Ingresa tu contraseña">
+                </div>
+              </div>
+              <button type="submit" class="auth-button" id="login-button-modal">Iniciar Sesión</button>
+              <div class="forgot-password">
+                <a href="#">¿Olvidaste tu contraseña?</a>
+              </div>
+              <div class="signup-link">
+                ¿No tienes una cuenta? <a href="#" class="switch-to-register">Regístrate</a>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Registro -->
+<div class="modal fade" id="registerModal" tabindex="-1" aria-labelledby="registerModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="auth-modal-container">
+        <div class="left-modal-panel">
+          <div class="left-content">
+            <div class="logo-container">
+              <img src="../static/imgs/logo.png" alt="RentHub" class="logo">
+            </div>
+            <h2 class="welcome-text">¡Únete a nosotros!</h2>
+            <p class="welcome-description">Forma parte de nuestra comunidad y encuentra tu espacio ideal</p>
+          </div>
+        </div>
+        <div class="right-modal-panel">
+          <button type="button" class="btn-close close-modal-btn" data-bs-dismiss="modal" aria-label="Close"></button>
+          <div class="form-container">
+            <h1 class="auth-title">Crear Cuenta</h1>
+            <form id="register-modal-form">
+              <div class="name-row">
+                <div class="form-group">
+                  <label for="first-name-modal">Nombre</label>
+                  <input type="text" id="first-name-modal" required placeholder="Nombre">
+                </div>
+                <div class="form-group">
+                  <label for="last-name-modal">Apellido Paterno</label>
+                  <input type="text" id="last-name-modal" required placeholder="Apellido paterno">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="second-last-name-modal">Apellido Materno</label>
+                <input type="text" id="second-last-name-modal" required placeholder="Apellido materno">
+              </div>
+              <div class="form-group">
+                <label for="email-register-modal">Correo electrónico</label>
+                <div class="input-icon">
+                  <i class="icon email-icon">✉️</i>
+                  <input type="email" id="email-register-modal" required placeholder="Correo electrónico">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="password-register-modal">Contraseña</label>
+                <div class="input-icon">
+                  <i class="icon lock-icon">🔒</i>
+                  <input type="password" id="password-register-modal" required placeholder="Contraseña">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="confirm-password-modal">Confirmar Contraseña</label>
+                <div class="input-icon">
+                  <i class="icon lock-icon">🔒</i>
+                  <input type="password" id="confirm-password-modal" required placeholder="Confirmar contraseña">
+                </div>
+              </div>
+              <button type="submit" class="auth-button">Registrarse</button>
+              <div class="login-link">
+                ¿Ya tienes una cuenta? <a href="#" class="switch-to-login">Inicia Sesión</a>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

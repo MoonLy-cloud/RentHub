@@ -9,23 +9,27 @@ document.addEventListener('DOMContentLoaded', function() {
             const password = document.getElementById('password').value;
 
             try {
+                console.log("Intentando iniciar sesión...");
+
                 const response = await fetch('/login', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ email, password }),
-                    credentials: 'include'  // Importante para cookies
+                    body: JSON.stringify({ email, password })
                 });
 
                 const data = await response.json();
+                console.log("Respuesta:", data);
 
                 if (response.ok) {
-                    // Guardamos el nombre en sessionStorage para uso inmediato
-                    sessionStorage.setItem('username', data.usuario);
+                    // Guardamos los datos completos del usuario en localStorage
+                    localStorage.setItem('usuarioData', JSON.stringify(data.usuario));
+                    localStorage.setItem('authToken', data.token);
+                    console.log("Sesión iniciada como:", data.usuario.nombre);
 
-                    // Redirigir a la página principal
-                    window.location.href = '/';
+                    // Redirigir con reemplazo total
+                    window.location.replace('/');
                 } else {
                     alert(data.message || 'Error en el inicio de sesión');
                 }
@@ -39,7 +43,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (signupLink) {
         signupLink.addEventListener('click', function(event) {
             event.preventDefault();
-            window.location.href = '/register';
+            window.location.replace('/register');
         });
     }
 });

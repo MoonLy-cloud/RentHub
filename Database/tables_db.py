@@ -22,6 +22,9 @@ class Usuario(Base):
     contrasena = Column(String)
     contrasena_confirmacion = Column(String)
     id_metodo_pago = Column(Integer, ForeignKey('metodo_pago.id_metodo_pago'))
+    paypal_email = Column(String, nullable=True)
+    fecha_registro = Column(DateTime, default=datetime.utcnow)
+    imagen_perfil = Column(String, nullable=True, default="/static/imgs/user.gif")  # Nuevo campo
 
     metodo_pago = relationship("MetodoPago")
     propiedades = relationship("Propiedad", secondary=renta_propiedad, back_populates="usuarios")

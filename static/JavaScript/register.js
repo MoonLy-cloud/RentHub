@@ -55,7 +55,7 @@ if (form) {
             password: password.value
         };
 
-        registerUser(user);
+        register(user);
     });
 }
 });
@@ -66,14 +66,14 @@ document.addEventListener('DOMContentLoaded', function() {
     if (loginLink) {
         loginLink.addEventListener('click', function(event) {
             event.preventDefault();
-            window.location.href = '/login';
+            window.location.replace('/login');
         });
     } else {
         console.error('El enlace de inicio no se encontró en el DOM');
     }
 });
 
-function registerUser(user) {
+function register(user) {
     fetch('/register', {
         method: 'POST',
         headers: {
@@ -87,6 +87,7 @@ function registerUser(user) {
                 alert('Usuario ya existente');
             } else if (status === 200) {
                 alert('Usuario registrado correctamente');
+                window.location.replace('/login'); // Añadir esta redirección
             } else {
                 throw new Error('Error en la solicitud');
             }

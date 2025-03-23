@@ -6,8 +6,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Agregar evento de clic
     if (buttonPlaces) {
         buttonPlaces.addEventListener('click', function() {
-            // Redireccionar a la página de propiedades
-            window.location.href = '/propiedades';
+            // Cambiar por replace para una carga completa
+            window.location.replace('/propiedades');
         });
     } else {
         console.error('El elemento con ID button_places no fue encontrado');

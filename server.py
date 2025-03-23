@@ -6,18 +6,36 @@ from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import FileResponse
 import Database.functions_db as db
 import jwt
-from typing import Optional
 from datetime import datetime, timedelta
+from fastapi import UploadFile, File, Form
+import shutil
+import os
+import uuid
 
 app = FastAPI()
 
+@app.on_event("startup")
+async def startup_event():
+    print("Iniciando la aplicación...")
+    db.inicializar_base_datos()
+
+    # Crear directorio para subida de imágenes
+    upload_dir = "static/uploads/profile"
+    os.makedirs(upload_dir, exist_ok=True)
+    # Asegurar permisos de escritura
+    try:
+        os.chmod(upload_dir, 0o755)
+    except Exception as e:
+        print(f"Advertencia: No se pudieron establecer permisos: {e}")
+
 app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/static/components", StaticFiles(directory="static/components"), name="components")
 templates = Jinja2Templates(directory="templates")
 
 # Configuración CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # En producción, cambia esto a tus dominios específicos
+    allow_origins=["http://127.0.0.1:8000", "http://localhost:8000"],  # Explícitamente tus orígenes
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -34,43 +52,20 @@ def create_access_token(data: dict):
     to_encode = data.copy()
     expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     to_encode.update({"exp": expire})
+    print(f"Creando token con datos: {to_encode}")
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
-
-# Función para verificar token JWT con mejor manejo de errores
-def verify_token(token: Optional[str] = Cookie(None)):
-    if not token:
-        # No mostrar error cuando no hay token
-        return None
-
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        return payload
-    except jwt.ExpiredSignatureError:
-        return None
-    except (jwt.JWTError, Exception) as e:
-        if not isinstance(e, jwt.JWTError):
-            # Solo mostrar errores no esperados
-            print(f"Error inesperado al verificar token: {str(e)}")
-        return None
-
-
-# Middleware para verificar si el usuario está autenticado
-async def get_current_user(user_data: Optional[dict] = Depends(verify_token)):
-    return user_data
-
-
 # Raiz del proyecto
 @app.get("/")
-def read_root(user_data: Optional[dict] = Depends(verify_token)):
+def read_root():
     return FileResponse("templates/index.html")
 
 
 # Ruta de formulario de registro
 @app.get("/register")
 def read_root():
-    return FileResponse("templates/RegisterUser.html")
+    return FileResponse("templates/register.html")
 
 
 # Manejo del registro del usuario
@@ -98,64 +93,103 @@ async def register_user(request: Request):
 
 @app.get("/publicar")
 def read_root():
-    return FileResponse("templates/Publicar.html")
+    return FileResponse("templates/publicar.html")
+
 # Ruta de formulario de login
 @app.get("/login")
 def read_root():
-    return FileResponse("templates/Login.html")
+    return FileResponse("templates/login.html")
 
 
 # Manejo del acceso a la cuenta de usuario
 @app.post("/login")
 async def login_user(request: Request, response: Response):
-    user_data = await request.json()
+    try:
+        user_data = await request.json()
 
-    if db.usuario_existe(user_data["email"]):
-        if db.verificar_contrasena(user_data["email"], user_data["password"]):
-            # Obtener datos del usuario
-            usuario = db.obtener_usuario_por_email(user_data["email"])
+        if not db.usuario_existe(user_data["email"]):
+            return JSONResponse(status_code=404, content={"message": "Usuario no encontrado"})
 
-            # Crear token JWT
-            token_data = {
-                "id": usuario["id"],
-                "email": usuario["correo"],
-                "nombre": usuario["nombre"]
-            }
-            access_token = create_access_token(token_data)
-
-            # Establecer cookie con el token (asegúrate de usar secure=True en producción con HTTPS)
-            response.set_cookie(
-                key="token",
-                value=access_token,
-                httponly=True,
-                max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
-                samesite="lax",
-                path="/"  # Importante: asegura que la cookie está disponible en todo el sitio
-            )
-
-            return JSONResponse(
-                status_code=200,
-                content={"message": "Usuario autenticado correctamente", "usuario": usuario["nombre"]}
-            )
-        else:
+        if not db.verificar_contrasena(user_data["email"], user_data["password"]):
             return JSONResponse(status_code=400, content={"message": "Contraseña incorrecta"})
-    else:
-        return JSONResponse(status_code=404, content={"message": "Usuario no encontrado"})
+
+        usuario = db.obtener_usuario_por_email(user_data["email"])
+
+        # Generar token pero no usarlo para cookies
+        token_data = {
+            "id": usuario["id"],
+            "email": usuario["correo"],
+            "nombre": usuario["nombre"]
+        }
+        access_token = create_access_token(token_data)
+
+        # Devolver los datos completos del usuario
+        return JSONResponse(
+            status_code=200,
+            content={
+                "message": "Usuario autenticado correctamente",
+                "usuario": usuario,
+                "token": access_token  # Enviamos el token al cliente
+            }
+        )
+    except Exception as e:
+        print(f"Error en login: {str(e)}")
+        return JSONResponse(status_code=500, content={"message": f"Error en el proceso de login: {str(e)}"})
 
 
-# Ruta para cerrar sesión
+# En el endpoint /logout
 @app.get("/logout")
-def logout(response: Response):
-    response.delete_cookie(key="token")
-    return RedirectResponse(url="/")
+def logout():
+    # Ya no necesitamos eliminar cookies
+    return JSONResponse(status_code=200, content={"message": "Sesión cerrada correctamente"})
+
+
+# Cambia la dependencia de verificación de token
+def verify_token_header(request: Request):
+    token = None
+    auth_header = request.headers.get("Authorization")
+
+    if auth_header and auth_header.startswith("Bearer "):
+        token = auth_header.split(" ")[1]
+        try:
+            payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+
+            # Opcionalmente: verificar si el usuario sigue existiendo en la base de datos
+            usuario = db.obtener_usuario_por_id(payload["id"])
+            if not usuario:
+                return None
+
+            return payload
+        except jwt.ExpiredSignatureError:
+            return None
+        except Exception as e:
+            print(f"Error al verificar token: {str(e)}")
+            return None
+    return None
+
+
+# Modifica las rutas protegidas
+@app.get("/api/mis-propiedades")
+async def get_mis_propiedades(request: Request):
+    # Extraer token del encabezado Authorization
+    token = None
+    auth_header = request.headers.get("Authorization")
+
+    if auth_header and auth_header.startswith("Bearer "):
+        token = auth_header.split(" ")[1]
+    else:
+        return JSONResponse(status_code=401, content={"message": "No autorizado"})
+
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        propiedades = db.obtener_propiedades_por_usuario(payload["id"])
+        return JSONResponse(status_code=200, content={"propiedades": propiedades})
+    except Exception as e:
+        return JSONResponse(status_code=401, content={"message": f"No autorizado: {str(e)}"})
 
 
 @app.get("/propiedades")
-def read_propiedades(user_data: Optional[dict] = Depends(verify_token)):
-    if not user_data:
-        # Mostrar vista limitada para usuarios no autenticados
-        return FileResponse("templates/propitiates.html")
-    # Mostrar vista completa para usuarios autenticados
+def read_propiedades():
     return FileResponse("templates/propitiates.html")
 
 
@@ -164,24 +198,25 @@ async def get_propiedades():
     propiedades = db.obtener_propiedades()
     return JSONResponse(status_code=200, content={"propiedades": propiedades})
 
-
-@app.get("/api/mis-propiedades")
-async def get_mis_propiedades(user_data: Optional[dict] = Depends(verify_token)):
-    if not user_data:
-        return JSONResponse(status_code=401, content={"message": "No autorizado"})
-
-    propiedades = db.obtener_propiedades_por_usuario(user_data["id"])
-    return JSONResponse(status_code=200, content={"propiedades": propiedades})
-
-
 @app.post("/api/propiedades")
-async def registrar_propiedad(request: Request, user_data: Optional[dict] = Depends(verify_token)):
-    if not user_data:
-        return JSONResponse(status_code=401, content={"message": "No autorizado"})
-
-    propiedad_data = await request.json()
-
+async def registrar_propiedad(request: Request):
     try:
+        data = await request.json()
+
+        # El token ahora viene en los datos JSON del cliente
+        token = data.get("token")
+        if not token:
+            return JSONResponse(status_code=401, content={"message": "No autorizado"})
+
+        try:
+            payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+            usuario_id = payload["id"]
+        except Exception:
+            return JSONResponse(status_code=401, content={"message": "Token inválido"})
+
+        # Resto de la lógica...
+        propiedad_data = data.get("propiedad")
+
         id_propiedad = db.registrar_propiedad(
             propiedad_data["nombre"],
             propiedad_data["direccion"],
@@ -189,7 +224,7 @@ async def registrar_propiedad(request: Request, user_data: Optional[dict] = Depe
             propiedad_data["precio"],
             propiedad_data["imagen"],
             propiedad_data["disponible"],
-            user_data["id"]  # Usar el ID del usuario autenticado
+            usuario_id
         )
         return JSONResponse(status_code=200,
                             content={"message": "Propiedad registrada correctamente", "id": id_propiedad})
@@ -198,28 +233,208 @@ async def registrar_propiedad(request: Request, user_data: Optional[dict] = Depe
 
 
 @app.delete("/api/propiedades/{propiedad_id}")
-async def eliminar_propiedad(propiedad_id: int, user_data: Optional[dict] = Depends(verify_token)):
-    if not user_data:
+async def eliminar_propiedad(propiedad_id: int, request: Request):
+    # Obtener token del header
+    auth_header = request.headers.get("Authorization")
+    if not auth_header or not auth_header.startswith("Bearer "):
         return JSONResponse(status_code=401, content={"message": "No autorizado"})
 
+    token = auth_header.split(" ")[1]
+
     try:
-        # Verificar si la propiedad pertenece al usuario
-        if not db.verificar_propiedad_usuario(propiedad_id, user_data["id"]):
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        # Resto del código igual
+        if not db.verificar_propiedad_usuario(propiedad_id, payload["id"]):
             return JSONResponse(status_code=403, content={"message": "No tienes permiso para eliminar esta propiedad"})
 
         db.eliminar_propiedad(propiedad_id)
         return JSONResponse(status_code=200, content={"message": "Propiedad eliminada correctamente"})
     except Exception as e:
-        return JSONResponse(status_code=500, content={"message": f"Error al eliminar la propiedad: {str(e)}"})
+        return JSONResponse(status_code=401, content={"message": f"No autorizado: {str(e)}"})
 
 
 @app.get("/api/usuario")
-async def get_usuario_actual(user_data: Optional[dict] = Depends(verify_token)):
-    if not user_data:
+async def get_usuario(request: Request):
+    auth_header = request.headers.get("Authorization")
+
+    if not auth_header or not auth_header.startswith("Bearer "):
         return JSONResponse(status_code=401, content={"message": "No autorizado"})
 
+    token = auth_header.split(" ")[1]
+
     try:
-        usuario = db.obtener_usuario_por_id(user_data["id"])
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        usuario = db.obtener_usuario_por_id(payload["id"])
+
+        if not usuario:
+            return JSONResponse(status_code=404, content={"message": "Usuario no encontrado"})
+
         return JSONResponse(status_code=200, content={"usuario": usuario})
     except Exception as e:
-        return JSONResponse(status_code=500, content={"message": f"Error al obtener datos del usuario: {str(e)}"})
+        return JSONResponse(status_code=401, content={"message": f"No autorizado: {str(e)}"})
+
+@app.get("/mi-perfil")
+def mi_perfil_page():
+    return FileResponse("templates/perfil.html")
+
+
+@app.get("/api/mi-perfil")
+async def get_mi_perfil(request: Request):
+    # Extraer token del encabezado Authorization
+    auth_header = request.headers.get("Authorization")
+
+    if not auth_header or not auth_header.startswith("Bearer "):
+        return JSONResponse(status_code=401, content={"message": "No autorizado"})
+
+    token = auth_header.split(" ")[1]
+
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        usuario = db.obtener_usuario_por_id(payload["id"])
+
+        if not usuario:
+            return JSONResponse(status_code=404, content={"message": "Usuario no encontrado"})
+
+        return JSONResponse(status_code=200, content={"perfil": usuario})
+    except Exception as e:
+        return JSONResponse(status_code=401, content={"message": f"No autorizado: {str(e)}"})
+
+
+@app.put("/api/actualizar-perfil")
+async def actualizar_perfil(request: Request):
+    auth_header = request.headers.get("Authorization")
+    if not auth_header or not auth_header.startswith("Bearer "):
+        return JSONResponse(status_code=401, content={"message": "No autorizado"})
+
+    token = auth_header.split(" ")[1]
+
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        usuario_id = payload["id"]
+
+        # Obtener datos de la solicitud
+        data = await request.json()
+
+        # Verificar si se está actualizando la contraseña
+        if "passwordActual" in data and "passwordNuevo" in data:
+            if not db.verificar_contrasena_por_id(usuario_id, data["passwordActual"]):
+                return JSONResponse(status_code=400, content={"message": "Contraseña actual incorrecta"})
+
+            # Actualizar contraseña
+            db.actualizar_contrasena(usuario_id, data["passwordNuevo"])
+
+        # Actualizar datos del perfil
+        db.actualizar_usuario(
+            usuario_id,
+            data["nombre"],
+            data["apellido1"],
+            data["apellido2"],
+            data["correo"]
+        )
+
+        return JSONResponse(status_code=200, content={"message": "Perfil actualizado correctamente"})
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"message": f"Error al actualizar perfil: {str(e)}"})
+
+
+@app.post("/api/conectar-paypal")
+async def conectar_paypal(request: Request):
+    auth_header = request.headers.get("Authorization")
+    if not auth_header or not auth_header.startswith("Bearer "):
+        return JSONResponse(status_code=401, content={"message": "No autorizado"})
+
+    token = auth_header.split(" ")[1]
+
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        usuario_id = payload["id"]
+
+        data = await request.json()
+        paypal_email = data.get("paypal_email")
+
+        if not paypal_email:
+            return JSONResponse(status_code=400, content={"message": "Email de PayPal no proporcionado"})
+
+        # Actualizar el email de PayPal en la base de datos
+        db.actualizar_paypal(usuario_id, paypal_email)
+
+        return JSONResponse(status_code=200, content={"message": "PayPal conectado correctamente"})
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"message": f"Error al conectar PayPal: {str(e)}"})
+
+
+@app.delete("/api/desconectar-paypal")
+async def desconectar_paypal(request: Request):
+    auth_header = request.headers.get("Authorization")
+    if not auth_header or not auth_header.startswith("Bearer "):
+        return JSONResponse(status_code=401, content={"message": "No autorizado"})
+
+    token = auth_header.split(" ")[1]
+
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        usuario_id = payload["id"]
+
+        # Eliminar el email de PayPal en la base de datos
+        db.actualizar_paypal(usuario_id, None)
+
+        return JSONResponse(status_code=200, content={"message": "PayPal desconectado correctamente"})
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"message": f"Error al desconectar PayPal: {str(e)}"})
+
+
+# Añadir este endpoint
+@app.post("/api/actualizar-imagen")
+async def actualizar_imagen(
+        file: UploadFile = File(...),
+        token_data: dict = Depends(verify_token_header)
+):
+    if not token_data:
+        return JSONResponse(status_code=401, content={"message": "No autorizado"})
+
+    usuario_id = token_data["id"]
+
+    # Validar tipo de archivo
+    file_extension = os.path.splitext(file.filename)[1].lower()
+    allowed_extensions = [".jpg", ".jpeg", ".png", ".gif", ".webp"]
+
+    if file_extension not in allowed_extensions:
+        return JSONResponse(
+            status_code=400,
+            content={"message": "Formato de archivo no permitido"}
+        )
+
+    # Crear carpeta de uploads si no existe
+    upload_dir = "static/uploads/profile"
+    os.makedirs(upload_dir, exist_ok=True)
+
+    # Generar nombre único para el archivo
+    unique_filename = f"{uuid.uuid4()}{file_extension}"
+    file_path = f"{upload_dir}/{unique_filename}"
+
+    # Guardar el archivo
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+
+    # Actualizar en base de datos
+    db_path = f"/static/uploads/profile/{unique_filename}"
+    try:
+        db.actualizar_imagen_perfil(usuario_id, db_path)
+        return JSONResponse(
+            status_code=200,
+            content={
+                "message": "Imagen actualizada correctamente",
+                "imagen_path": db_path
+            }
+        )
+    except Exception as e:
+        # Si hay error, eliminar el archivo subido
+        if os.path.exists(file_path):
+            os.remove(file_path)
+        return JSONResponse(
+            status_code=500,
+            content={"message": f"Error al actualizar imagen: {str(e)}"}
+        )
+    finally:
+        file.file.close()
+        # NO eliminar el archivo aquí

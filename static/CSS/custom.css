@@ -1,0 +1,242 @@
+/* static/CSS/custom.css */
+
+/* Definición de variables de Bootstrap */
+:root {
+    --bs-primary: #0d6efd;
+    --bs-secondary: #6c757d;
+    --bs-success: #198754;
+    --bs-info: #0dcaf0;
+    --bs-warning: #ffc107;
+    --bs-danger: #dc3545;
+}
+
+/* Estilos para la navbar */
+.navbar {
+    padding-top: 12px;
+    padding-bottom: 12px;
+    transition: all 0.3s ease;
+}
+
+.navbar-brand .brand-text {
+    font-size: 1.3rem;
+    letter-spacing: 0.5px;
+}
+
+/* Estilos para los items de navegación */
+.nav-item-hover {
+    position: relative;
+    padding: 0.5rem 1rem;
+    transition: color 0.3s ease;
+}
+
+.nav-item-hover:after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    background-color: var(--bs-primary);
+    bottom: 0;
+    left: 0;
+    transition: width 0.3s ease;
+}
+
+.nav-item-hover:hover:after,
+.nav-item-hover.active:after {
+    width: 100%;
+}
+
+/* Estilos para los botones de autenticación */
+.auth-not-required .btn {
+    font-weight: 500;
+    border-width: 2px;
+    transition: all 0.3s ease;
+}
+
+.auth-not-required .btn-outline-primary {
+    color: #000 !important;
+}
+
+.auth-not-required .btn-primary {
+    color: #000 !important;
+}
+
+.hover-effect:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Estilos para el avatar de usuario */
+/* Estilos mejorados para el avatar de usuario */
+.user-avatar-container {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 2px solid var(--bs-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 35px; /* Establecer ancho mínimo */
+    min-height: 35px; /* Establecer altura mínima */
+    margin: 0;
+    padding: 0;
+}
+
+.user-avatar-container img.user-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    margin: 0;
+    padding: 0;
+    border-radius: 50%;
+}
+
+/* Ajuste para la alineación vertical en la navbar */
+.dropdown-toggle.d-flex {
+    align-items: center;
+}
+
+/* Ajuste para el espacio entre nombre y avatar */
+#username-display {
+    margin-right: 8px;
+}
+
+.user-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Estilos para el dropdown */
+.dropdown-menu {
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.dropdown-item {
+    transition: background-color 0.2s ease;
+    padding: 0.6rem 1rem;
+}
+
+/* Mejoras para responsive */
+@media (max-width: 991px) {
+    .navbar-collapse {
+        padding: 1rem 0;
+    }
+
+    .nav-item {
+        margin: 5px 0;
+    }
+
+    .auth-not-required .btn {
+        display: block;
+        width: 100%;
+        margin-top: 5px;
+    }
+
+    .user-avatar-container {
+        margin-right: auto;
+        margin-left: 0;
+    }
+}
+
+/* Mejorar la transición del navbar toggle */
+.navbar-toggler {
+    border: none;
+    padding: 0.5rem;
+}
+
+.navbar-toggler:focus {
+    box-shadow: none;
+    outline: none;
+}
+
+/* Animación para el active */
+.nav-link.active {
+    font-weight: 600;
+    color: var(--bs-primary) !important;
+}
+
+.password-requirements {
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    padding: 8px;
+    font-size: 0.875rem;
+    background-color: #f8f9fa;
+    margin-top: 5px;
+}
+
+#modal-password-feedback,
+#modal-email-feedback {
+    font-size: 0.875rem;
+}
+
+/* Estilo para iconos dentro de inputs */
+.input-icon {
+    position: relative;
+    width: 100%;
+}
+
+.input-icon input {
+    width: 100%;
+    padding-left: 35px; /* Espacio para el icono */
+}
+
+.input-icon .icon {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 16px;
+    color: #6c757d;
+    z-index: 10;
+}
+
+/* Mejoras para los modals de autenticación */
+.auth-modal-container {
+    display: flex;
+    min-height: 550px;
+}
+
+.left-modal-panel {
+    flex: 1;
+    background-color: var(--bs-primary);
+    color: white;
+    padding: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.right-modal-panel {
+    flex: 1.5;
+    padding: 40px;
+    position: relative;
+}
+
+/* Ajuste específico para los inputs del formulario */
+#register-modal-form .input-icon,
+#login-modal-form .input-icon {
+    margin-bottom: 15px;
+    display: block;
+}
+
+#register-modal-form input,
+#login-modal-form input {
+    border-radius: 8px;
+    padding: 10px 10px 10px 35px;
+    border: 1px solid #ced4da;
+}
+
+/* Asegurarse que los feedback queden bien colocados */
+#modal-password-feedback,
+#modal-email-feedback {
+    margin-top: -10px;
+    margin-bottom: 15px;
+}
+
+.password-requirements {
+    font-size: 0.8rem;
+    max-width: 100%;
+    overflow: hidden;
+}

@@ -1,0 +1,57 @@
+<!-- templates/components/navbar.html -->
+<nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm sticky-top">
+  <div class="container">
+    <a class="navbar-brand fw-bold text-primary" href="/static">
+      <img src="/static/imgs/logo.png" alt="RentHub" height="30" class="d-inline-block align-text-top me-2">
+      RentHub
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto align-items-center">
+        <li class="nav-item">
+          <a class="nav-link fw-medium {{ 'active' if active_page == 'home' }}" href="/static">Inicio</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link fw-medium {{ 'active' if active_page == 'propiedades' }}" href="/propiedades">Lugares</a>
+        </li>
+        <!-- Dropdown para usuarios autenticados -->
+        <li class="nav-item dropdown auth-required" style="display: none;">
+          <a class="nav-link dropdown-toggle d-flex align-items-center user-profile-active" href="#"
+             id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <img src="/imgs/user.gif" alt="Usuario" class="user-img">
+            <span id="username-display" class="ms-2"></span>
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="userDropdown">
+            <li>
+              <a class="dropdown-item d-flex align-items-center {{ 'active' if active_page == 'publicar' }}" href="/publicar">
+                <span class="me-2">🏠</span> Publicar Lugar/sitio
+              </a>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+              <a class="dropdown-item d-flex align-items-center {{ 'active' if active_page == 'perfil' }}" href="/mi-perfil">
+                <span class="me-2">👤</span> Mi Perfil
+              </a>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+              <a class="dropdown-item text-danger d-flex align-items-center" href="/logout" id="logout-btn">
+                <span class="me-2">🚪</span> Cerrar sesión
+              </a>
+            </li>
+          </ul>
+        </li>
+        <!-- Botones para usuarios no autenticados -->
+        <li class="nav-item auth-not-required me-2">
+          <a class="nav-link btn btn-outline-primary px-3 rounded-pill" href="/login">Iniciar sesión</a>
+        </li>
+        <li class="nav-item auth-not-required">
+          <a class="nav-link btn btn-primary text-black px-3 rounded-pill" href="/register">Registrarse</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
