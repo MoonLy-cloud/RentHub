@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request, Response, Cookie, Depends
+from fastapi import FastAPI, Request, Response, Cookie, Depends, Body
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
@@ -64,31 +64,47 @@ def read_root():
 
 # Ruta de formulario de registro
 @app.get("/register")
-def read_root():
-    return FileResponse("templates/register.html")
+async def register_page():
+    # Redirigir a la página principal donde están los modales
+    return RedirectResponse(url="/")
 
 
 # Manejo del registro del usuario
 @app.post("/register")
-async def register_user(request: Request):
-    user_data = await request.json()
+async def register_user(data: dict = Body(...)):
+    try:
+        nombre = data.get("name")
+        apellido_p = data.get("lastName")
+        apellido_m = data.get("secondLastName")
+        correo = data.get("email")
+        contrasena = data.get("password")
+        contrasena_confirmacion = data.get("confirmPassword")
+        curp = data.get("curp")
 
-    # Verificar si el usuario ya existe
-    if db.usuario_existe(user_data["email"]):
-        return JSONResponse(status_code=400, content={"message": "Usuario ya existente"})
-    else:
-        # Usar el mismo password como confirmación si no se proporciona confirmPassword
-        confirm_password = user_data.get("confirmPassword", user_data["password"])
+        # Validar si el usuario ya existe
+        if db.usuario_existe(correo=correo, curp=curp):
+            return JSONResponse(
+                status_code=400,
+                content={"message": "El correo o CURP ya están registrados"}
+            )
 
+        # Guardar nuevo usuario
         usuario = db.guardar_usuario(
-            user_data["name"],
-            user_data["lastName"],
-            user_data["secondLastName"],
-            user_data["email"],
-            user_data["password"],
-            confirm_password  # Pasamos la variable que puede ser el mismo password
+            nombre=nombre,
+            apellido_p=apellido_p,
+            apellido_m=apellido_m,
+            correo=correo,
+            contrasena=contrasena,
+            contrasena_confirmacion=contrasena_confirmacion,
+            curp=curp
         )
-        return JSONResponse(status_code=200, content={"message": "Usuario registrado correctamente"})
+
+        return {"success": True, "message": "Usuario registrado correctamente", "usuario_id": usuario.id_usuario}
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"message": f"Error al registrar usuario: {str(e)}"}
+        )
 
 
 @app.get("/publicar")
@@ -234,6 +250,58 @@ async def registrar_propiedad(request: Request):
         return JSONResponse(status_code=500, content={"message": f"Error al registrar la propiedad: {str(e)}"})
 
 
+@app.get("/api/propiedades/{propiedad_id}")
+async def get_propiedad(propiedad_id: int):
+    # Sin verificación de autorización
+    propiedad = db.obtener_propiedad_por_id(propiedad_id)
+
+    if not propiedad:
+        return JSONResponse(status_code=404, content={"message": "Propiedad no encontrada"})
+
+    return JSONResponse(status_code=200, content={"propiedad": propiedad})
+
+@app.get("/api/propiedades/publico/{propiedad_id}")
+async def get_propiedad_publico(propiedad_id: int):
+    propiedad = db.obtener_propiedad_por_id(propiedad_id)
+
+    if not propiedad:
+        return JSONResponse(status_code=404, content={"message": "Propiedad no encontrada"})
+
+    return JSONResponse(status_code=200, content={"propiedad": propiedad})
+
+
+@app.put("/api/propiedades/{propiedad_id}")
+async def actualizar_propiedad(propiedad_id: int, request: Request):
+    auth_header = request.headers.get("Authorization")
+    if not auth_header or not auth_header.startswith("Bearer "):
+        return JSONResponse(status_code=401, content={"message": "No autorizado"})
+
+    token = auth_header.split(" ")[1]
+
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        data = await request.json()
+
+        # Verificar que la propiedad pertenece al usuario actual
+        if not db.verificar_propiedad_usuario(propiedad_id, payload["id"]):
+            return JSONResponse(status_code=403, content={"message": "No tienes permiso para modificar esta propiedad"})
+
+        propiedad_data = data.get("propiedad")
+
+        db.actualizar_propiedad(
+            propiedad_id,
+            propiedad_data["nombre"],
+            propiedad_data["direccion"],
+            propiedad_data["descripcion"],
+            propiedad_data["precio"],
+            propiedad_data["imagen"],
+            propiedad_data["disponible"]
+        )
+
+        return JSONResponse(status_code=200, content={"message": "Propiedad actualizada correctamente"})
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"message": f"Error: {str(e)}"})
+
 @app.delete("/api/propiedades/{propiedad_id}")
 async def eliminar_propiedad(propiedad_id: int, request: Request):
     # Obtener token del header
@@ -274,6 +342,23 @@ async def get_usuario(request: Request):
         return JSONResponse(status_code=200, content={"usuario": usuario})
     except Exception as e:
         return JSONResponse(status_code=401, content={"message": f"No autorizado: {str(e)}"})
+
+
+@app.get("/api/usuario/{usuario_id}")
+async def get_usuario_by_id(usuario_id: int):
+    usuario = db.obtener_usuario_por_id(usuario_id)
+
+    if not usuario:
+        return JSONResponse(status_code=404, content={"message": "Usuario no encontrado"})
+
+    # Solo devolver información pública
+    return JSONResponse(status_code=200, content={
+        "usuario": {
+            "id": usuario["id"],
+            "nombre": usuario["nombre"],
+            "correo": usuario["correo"]
+        }
+    })
 
 @app.get("/mi-perfil")
 def mi_perfil_page():

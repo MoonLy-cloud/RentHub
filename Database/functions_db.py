@@ -16,20 +16,33 @@ Base.metadata.create_all(engine)
 Session = sessionmaker(bind=engine)
 session = Session()
 
-def guardar_usuario(nombre, apellido_p, apellido_m, correo, contrasena, contrasena_confirmacion):
+def guardar_usuario(nombre, apellido_p, apellido_m, correo, contrasena, contrasena_confirmacion, curp):
     usuario = Usuario(
         nombre=nombre,
         apellido_p=apellido_p,
         apellido_m=apellido_m,
         correo=correo,
         contrasena=contrasena,
-        contrasena_confirmacion=contrasena_confirmacion
+        contrasena_confirmacion=contrasena_confirmacion,
+        curp=curp
     )
 
     session.add(usuario)
     session.commit()
 
     return usuario
+
+def usuario_existe(correo=None, curp=None):
+    """Verifica si existe un usuario por correo o CURP"""
+    if correo and curp:
+        return session.query(Usuario).filter(
+            (Usuario.correo == correo) | (Usuario.curp == curp)
+        ).count() > 0
+    elif correo:
+        return session.query(Usuario).filter(Usuario.correo == correo).count() > 0
+    elif curp:
+        return session.query(Usuario).filter(Usuario.curp == curp).count() > 0
+    return False
 
 
 def actualizar_paypal(id, paypal_email):
@@ -113,8 +126,6 @@ def actualizar_contrasena(id, nueva_contrasena):
         session.rollback()
         raise
 
-def usuario_existe(correo):
-    return session.query(Usuario).filter(Usuario.correo == correo).count() > 0
 
 def verificar_contrasena(correo, contrasena):
     return session.query(Usuario).filter(Usuario.correo == correo, Usuario.contrasena == contrasena).count() > 0
@@ -138,6 +149,45 @@ def obtener_propiedades():
         resultado.append(prop_dict)
 
     return resultado
+
+
+def obtener_propiedad_por_id(propiedad_id):
+    """Obtiene una propiedad por su ID"""
+    propiedad = session.query(Propiedad).filter(Propiedad.id_propiedad == propiedad_id).first()
+
+    if propiedad:
+        return {
+            'id': propiedad.id_propiedad,
+            'nombre': propiedad.nombre,
+            'direccion': propiedad.direccion,
+            'descripcion': propiedad.descripcion,
+            'precio': propiedad.precio,
+            'imagen': propiedad.imagen,
+            'disponible': propiedad.disponible,
+            'id_propietario': propiedad.id_propietario
+        }
+    return None
+
+def actualizar_propiedad(id_propiedad, nombre, direccion, descripcion, precio, imagen, disponible):
+    """Actualiza los datos de una propiedad"""
+    try:
+        propiedad = session.query(Propiedad).filter(Propiedad.id_propiedad == id_propiedad).first()
+
+        if propiedad:
+            propiedad.nombre = nombre
+            propiedad.direccion = direccion
+            propiedad.descripcion = descripcion
+            propiedad.precio = precio
+            propiedad.imagen = imagen
+            propiedad.disponible = disponible
+
+            session.commit()
+            return True
+        return False
+    except Exception as e:
+        print(f"Error al actualizar propiedad: {str(e)}")
+        session.rollback()
+        raise
 
 def registrar_propiedad(nombre, direccion, descripcion, precio, imagen, disponible, id_propietario):
     propiedad = Propiedad(
@@ -169,7 +219,6 @@ def obtener_usuario_por_email(correo):
 
 
 def obtener_usuario_por_id(usuario_id):
-    # Agregamos debugging
     print(f"Buscando usuario con ID: {usuario_id}")
 
     usuario = session.query(Usuario).filter(Usuario.id_usuario == usuario_id).first()
@@ -177,14 +226,15 @@ def obtener_usuario_por_id(usuario_id):
     if usuario:
         print(f"Usuario encontrado: {usuario.nombre}")
         return {
-            "id": usuario.id_usuario,  # Mantenemos consistencia con el token
+            "id": usuario.id_usuario,
             "nombre": usuario.nombre,
             "apellido1": usuario.apellido_p,
             "apellido2": usuario.apellido_m,
             "correo": usuario.correo,
+            "curp": usuario.curp,  # Añadir este campo
             "paypal_email": usuario.paypal_email,
             "fecha_registro": usuario.fecha_registro.isoformat() if usuario.fecha_registro else None,
-            "imagen_perfil": usuario.imagen_perfil or "/static/imgs/user.gif"  # Valor por defecto
+            "imagen_perfil": usuario.imagen_perfil or "/static/imgs/user.gif"
         }
     else:
         print(f"Usuario con ID {usuario_id} no encontrado")

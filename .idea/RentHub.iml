@@ -17,6 +17,9 @@
     <orderEntry type="library" name="mapbox-gl" level="application" />
     <orderEntry type="library" name="sweetalert2" level="application" />
     <orderEntry type="library" name="@turf/turf" level="application" />
+    <orderEntry type="library" name="mapbox-gl" level="application" />
+    <orderEntry type="library" name="mapbox-gl-geocoder" level="application" />
+    <orderEntry type="library" name="@turf/turf" level="application" />
   </component>
   <component name="PackageRequirementsSettings">
     <option name="modifyBaseFiles" value="true" />

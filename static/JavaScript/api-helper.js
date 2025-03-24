@@ -40,9 +40,23 @@ function getUsuarioActual() {
     return userData ? JSON.parse(userData) : null;
 }
 
+// Añade esto a tu archivo auth.js o donde tengas la función verificarAutenticacion
+function getToken() {
+    // Primero buscar en localStorage (persistente)
+    let token = localStorage.getItem('token');
+
+    // Si no está en localStorage, buscar en sessionStorage (temporal)
+    if (!token) {
+        token = sessionStorage.getItem('token');
+    }
+
+    return token;
+}
+
+
 // Verificar autenticación con el servidor
 async function verificarAutenticacion() {
-    const token = localStorage.getItem('token');
+    const token = getToken()
 
     if (token) {
         try {

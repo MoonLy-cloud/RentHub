@@ -14,19 +14,23 @@ renta_propiedad = Table(
 
 class Usuario(Base):
     __tablename__ = 'usuario'
-    id_usuario = Column(Integer, primary_key=True)
-    nombre = Column(String)
-    apellido_p = Column(String)
-    apellido_m = Column(String)
-    correo = Column(String)
-    contrasena = Column(String)
-    contrasena_confirmacion = Column(String)
-    id_metodo_pago = Column(Integer, ForeignKey('metodo_pago.id_metodo_pago'))
-    paypal_email = Column(String, nullable=True)
-    fecha_registro = Column(DateTime, default=datetime.utcnow)
-    imagen_perfil = Column(String, nullable=True, default="/static/imgs/user.gif")  # Nuevo campo
 
-    metodo_pago = relationship("MetodoPago")
+    id_usuario = Column(Integer, primary_key=True, autoincrement=True)
+    nombre = Column(String, nullable=False)
+    apellido_p = Column(String, nullable=False)
+    apellido_m = Column(String, nullable=False)
+    correo = Column(String, nullable=False, unique=True)
+    contrasena = Column(String, nullable=False)
+    contrasena_confirmacion = Column(String, nullable=False)
+    fecha_registro = Column(DateTime, default=datetime.now)
+    imagen_perfil = Column(String, nullable=True, default="/static/imgs/user.gif")
+    paypal_email = Column(String, nullable=True)
+    curp = Column(String(18), nullable=False, unique=True)
+    # Agregar esta línea:
+    id_metodo_pago = Column(Integer, ForeignKey('metodo_pago.id_metodo_pago'), nullable=True)
+
+    # Modificar la relación para usar back_populates
+    metodo_pago = relationship("MetodoPago", back_populates="usuarios")
     propiedades = relationship("Propiedad", secondary=renta_propiedad, back_populates="usuarios")
 
 
