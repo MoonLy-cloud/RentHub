@@ -8,13 +8,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const inputImagen = document.getElementById('imagen-perfil');
     const previewContainer = document.getElementById('preview-container');
     const imagenPreview = document.getElementById('imagen-preview');
-    const btnEliminarCuenta = document.getElementById('btn-eliminar-cuenta');
-
-    if (btnEliminarCuenta) {
-        btnEliminarCuenta.addEventListener('click', function() {
-            eliminarCuenta();
-        });
-    }
 
     if (btnCambiarImagen) {
         btnCambiarImagen.addEventListener('click', function() {
@@ -517,90 +510,4 @@ function eliminarPropiedad(id) {
                 });
             });
     }
-}
-
-function eliminarCuenta() {
-    Swal.fire({
-        title: '¿Estás seguro?',
-        text: "Esta acción eliminará permanentemente tu cuenta y todas tus propiedades. No podrás recuperar esta información.",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#dc3545',
-        cancelButtonColor: '#6c757d',
-        confirmButtonText: 'Sí, eliminar mi cuenta',
-        cancelButtonText: 'Cancelar',
-        footer: '<span class="text-danger">Advertencia: Esta acción es irreversible</span>'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            // Solicitar contraseña para confirmar eliminación
-            Swal.fire({
-                title: 'Confirma tu contraseña',
-                input: 'password',
-                inputPlaceholder: 'Ingresa tu contraseña actual',
-                inputAttributes: {
-                    autocapitalize: 'off',
-                    autocorrect: 'off'
-                },
-                showCancelButton: true,
-                confirmButtonText: 'Eliminar cuenta',
-                confirmButtonColor: '#dc3545',
-                cancelButtonText: 'Cancelar',
-                showLoaderOnConfirm: true,
-                preConfirm: (password) => {
-                    if (!password) {
-                        Swal.showValidationMessage('Debes ingresar tu contraseña');
-                        return false;
-                    }
-                    return password;
-                },
-                allowOutsideClick: () => !Swal.isLoading()
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    // Realizar la solicitud al servidor
-                    fetchAutenticado('/api/eliminar-cuenta', {
-                        method: 'DELETE',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ password: result.value })
-                    })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                // Eliminar datos locales
-                                localStorage.removeItem('token');
-                                localStorage.removeItem('username');
-                                localStorage.removeItem('usuarioData');
-                                localStorage.removeItem('user_image');
-
-                                Swal.fire({
-                                    title: '¡Cuenta eliminada!',
-                                    text: 'Tu cuenta ha sido eliminada correctamente',
-                                    icon: 'success',
-                                    confirmButtonColor: 'var(--bs-primary)'
-                                }).then(() => {
-                                    window.location.href = '/';
-                                });
-                            } else {
-                                Swal.fire({
-                                    title: 'Error',
-                                    text: data.message || 'No se pudo eliminar la cuenta',
-                                    icon: 'error',
-                                    confirmButtonColor: 'var(--bs-primary)'
-                                });
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            Swal.fire({
-                                title: 'Error',
-                                text: 'Ocurrió un error al procesar tu solicitud',
-                                icon: 'error',
-                                confirmButtonColor: 'var(--bs-primary)'
-                            });
-                        });
-                }
-            });
-        }
-    });
 }

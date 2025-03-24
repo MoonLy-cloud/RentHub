@@ -61,25 +61,6 @@ def actualizar_usuario(id, nombre, apellido1, apellido2, correo):
         session.rollback()
         raise
 
-def eliminar_usuario(usuario_id):
-    try:
-        # Primero eliminar todas las propiedades asociadas al usuario
-        propiedades = session.query(Propiedad).filter(Propiedad.id_propietario == usuario_id).all()
-        for propiedad in propiedades:
-            session.delete(propiedad)
-
-        # Luego eliminar el usuario
-        usuario = session.query(Usuario).filter(Usuario.id_usuario == usuario_id).first()
-        if usuario:
-            session.delete(usuario)
-            session.commit()
-            return True
-        return False
-    except Exception as e:
-        print(f"Error al eliminar usuario: {str(e)}")
-        session.rollback()
-        raise
-
 def actualizar_imagen_perfil(id, ruta_imagen):
     try:
         usuario = session.query(Usuario).filter(Usuario.id_usuario == id).first()

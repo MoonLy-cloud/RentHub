@@ -203,12 +203,10 @@ async def registrar_propiedad(request: Request):
     try:
         data = await request.json()
 
-        # Extraer token del encabezado Authorization
-        auth_header = request.headers.get("Authorization")
-        if not auth_header or not auth_header.startswith("Bearer "):
+        # El token ahora viene en los datos JSON del cliente
+        token = data.get("token")
+        if not token:
             return JSONResponse(status_code=401, content={"message": "No autorizado"})
-
-        token = auth_header.split(" ")[1]
 
         try:
             payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
@@ -221,7 +219,7 @@ async def registrar_propiedad(request: Request):
 
         id_propiedad = db.registrar_propiedad(
             propiedad_data["nombre"],
-            propiedad_data.get("direccion", ""),
+            propiedad_data["direccion"],
             propiedad_data["descripcion"],
             propiedad_data["precio"],
             propiedad_data["imagen"],
@@ -339,50 +337,6 @@ async def actualizar_perfil(request: Request):
         return JSONResponse(status_code=500, content={"message": f"Error al actualizar perfil: {str(e)}"})
 
 
-@app.delete("/api/eliminar-cuenta")
-async def eliminar_cuenta(request: Request):
-    auth_header = request.headers.get("Authorization")
-    if not auth_header or not auth_header.startswith("Bearer "):
-        return JSONResponse(status_code=401, content={"message": "No autorizado", "success": False})
-
-    token = auth_header.split(" ")[1]
-
-    try:
-        # Decodificar el token
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        usuario_id = payload["id"]
-
-        # Obtener datos de la solicitud
-        data = await request.json()
-        password = data.get("password")
-
-        # Verificar contraseña
-        if not db.verificar_contrasena_por_id(usuario_id, password):
-            return JSONResponse(
-                status_code=400,
-                content={"message": "Contraseña incorrecta", "success": False}
-            )
-
-        # Eliminar la cuenta y sus datos asociados
-        if db.eliminar_usuario(usuario_id):
-            return JSONResponse(
-                status_code=200,
-                content={"message": "Cuenta eliminada correctamente", "success": True}
-            )
-        else:
-            return JSONResponse(
-                status_code=500,
-                content={"message": "Error al eliminar la cuenta", "success": False}
-            )
-
-    except Exception as e:
-        print(f"Error al eliminar cuenta: {str(e)}")
-        return JSONResponse(
-            status_code=500,
-            content={"message": f"Error: {str(e)}", "success": False}
-        )
-
-
 @app.post("/api/conectar-paypal")
 async def conectar_paypal(request: Request):
     auth_header = request.headers.get("Authorization")
@@ -484,9 +438,3 @@ async def actualizar_imagen(
     finally:
         file.file.close()
         # NO eliminar el archivo aquí
-
-@app.get("/api/mapbox-token")
-async def get_mapbox_token():
-    # Almacena el token como variable de entorno o en una constante en el servidor
-    token = os.environ.get("MAPBOX_TOKEN", "pk.eyJ1IjoibW9vbmx5MTIiLCJhIjoiY204bjNreGduMG1weTJtcHE5OGdtejJvNCJ9.pdpFMcxEu9w0np44GEEu4g")
-    return JSONResponse(status_code=200, content={"token": token})
