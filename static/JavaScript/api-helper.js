@@ -1,8 +1,13 @@
 // static/JavaScript/api-helper.js
 
+// Función para obtener el token desde cualquier almacenamiento
+function getToken() {
+    return sessionStorage.getItem('token') || localStorage.getItem('token');
+}
+
 // Función para hacer peticiones autenticadas
 async function fetchAutenticado(url, options = {}) {
-    const token = localStorage.getItem('token');
+    const token = getToken();
 
     if (!token) {
         throw new Error('No hay token de autenticación');
@@ -31,7 +36,7 @@ async function fetchAutenticado(url, options = {}) {
 
 // Verificar si el usuario está autenticado
 function estaAutenticado() {
-    return localStorage.getItem('token') !== null;
+    return getToken() !== null;
 }
 
 // Obtener datos del usuario actual
@@ -40,23 +45,9 @@ function getUsuarioActual() {
     return userData ? JSON.parse(userData) : null;
 }
 
-// Añade esto a tu archivo auth.js o donde tengas la función verificarAutenticacion
-function getToken() {
-    // Primero buscar en localStorage (persistente)
-    let token = localStorage.getItem('token');
-
-    // Si no está en localStorage, buscar en sessionStorage (temporal)
-    if (!token) {
-        token = sessionStorage.getItem('token');
-    }
-
-    return token;
-}
-
-
 // Verificar autenticación con el servidor
 async function verificarAutenticacion() {
-    const token = getToken()
+    const token = getToken();
 
     if (token) {
         try {
@@ -69,6 +60,8 @@ async function verificarAutenticacion() {
 
             if (!response.ok) {
                 // Token inválido, eliminar credenciales
+                sessionStorage.removeItem('token');
+                sessionStorage.removeItem('username');
                 localStorage.removeItem('token');
                 localStorage.removeItem('username');
             }
@@ -90,31 +83,37 @@ async function verificarAutenticacion() {
 
 // Actualizar UI basado en el estado de autenticación
 function updateAuthUI() {
-    const token = localStorage.getItem('token');
-    const username = localStorage.getItem('username');
+    const token = getToken();
+    const username = sessionStorage.getItem('username') || localStorage.getItem('username');
     const userImage = localStorage.getItem('user_image');
 
-    // Elementos que requieren autenticación
+    // Primero oculta/muestra los elementos según corresponda
     document.querySelectorAll('.auth-required').forEach(el => {
         el.style.display = token ? '' : 'none';
     });
 
-    // Elementos para usuarios no autenticados
     document.querySelectorAll('.auth-not-required').forEach(el => {
         el.style.display = token ? 'none' : '';
     });
 
-    // Actualizar nombre de usuario si existe
-    const usernameElement = document.getElementById('username-display');
-    if (usernameElement && username) {
-        usernameElement.textContent = username;
-    }
+    // Luego actualiza la información del usuario si existe
+    if (token) {
+        const usernameElement = document.getElementById('username-display');
+        if (usernameElement && username) {
+            usernameElement.textContent = username;
+        }
 
-    // Actualizar imagen de usuario si existe
-    if (userImage) {
-        document.querySelectorAll('.user-img').forEach(img => {
-            img.src = userImage;
-        });
+        // Actualizar imagen de usuario si existe
+        if (userImage) {
+            document.querySelectorAll('.user-img').forEach(img => {
+                img.src = userImage;
+            });
+        } else {
+            // Si no hay imagen personalizada, usar la predeterminada
+            document.querySelectorAll('.user-img').forEach(img => {
+                img.src = "/static/imgs/user.gif";
+            });
+        }
     }
 }
 
@@ -131,8 +130,12 @@ function cerrarSesion() {
         cancelButtonText: 'Cancelar'
     }).then((result) => {
         if (result.isConfirmed) {
+            // Limpiar ambos almacenamientos
+            sessionStorage.removeItem('token');
+            sessionStorage.removeItem('username');
             localStorage.removeItem('token');
             localStorage.removeItem('username');
+            localStorage.removeItem('user_image');
 
             Swal.fire(
                 '¡Sesión cerrada!',
@@ -152,3 +155,4 @@ window.getUsuarioActual = getUsuarioActual;
 window.verificarAutenticacion = verificarAutenticacion;
 window.updateAuthUI = updateAuthUI;
 window.cerrarSesion = cerrarSesion;
+window.getToken = getToken;
