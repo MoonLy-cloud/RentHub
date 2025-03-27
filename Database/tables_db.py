@@ -26,8 +26,8 @@ class Usuario(Base):
     imagen_perfil = Column(String, nullable=True, default="/static/imgs/user.gif")
     paypal_email = Column(String, nullable=True)
     curp = Column(String(18), nullable=False, unique=True)
-    # Agregar esta línea:
     id_metodo_pago = Column(Integer, ForeignKey('metodo_pago.id_metodo_pago'), nullable=True)
+    rol = Column(String, default="usuario")  # Valores posibles: "usuario", "admin"
 
     # Modificar la relación para usar back_populates
     metodo_pago = relationship("MetodoPago", back_populates="usuarios")

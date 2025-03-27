@@ -126,10 +126,8 @@ def actualizar_contrasena(id, nueva_contrasena):
         session.rollback()
         raise
 
-
 def verificar_contrasena(correo, contrasena):
     return session.query(Usuario).filter(Usuario.correo == correo, Usuario.contrasena == contrasena).count() > 0
-
 
 def obtener_propiedades():
     propiedades = session.query(Propiedad).all()
@@ -305,3 +303,23 @@ def inicializar_base_datos():
 
     print("Inicialización de base de datos completada")
     return True
+
+def obtener_todos_usuarios():
+    usuarios = session.query(Usuario).all()
+    resultado = []
+
+    for usuario in usuarios:
+        usuario_dict = {
+            'id': usuario.id_usuario,
+            'nombre': usuario.nombre,
+            'apellido_p': usuario.apellido_p,
+            'apellido_m': usuario.apellido_m,
+            'correo': usuario.correo,
+            'curp': usuario.curp,
+            'fecha_registro': usuario.fecha_registro.isoformat() if usuario.fecha_registro else None,
+            'paypal_email': usuario.paypal_email or "No configurado",
+            'imagen_perfil': usuario.imagen_perfil or "/static/imgs/user.gif"
+        }
+        resultado.append(usuario_dict)
+
+    return resultado

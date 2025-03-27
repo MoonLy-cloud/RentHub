@@ -1,3 +1,4 @@
+import jsonify
 from fastapi import FastAPI, Request, Response, Cookie, Depends, Body
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import JSONResponse, RedirectResponse
@@ -575,3 +576,32 @@ async def get_mapbox_token():
     # Almacena el token como variable de entorno o en una constante en el servidor
     token = os.environ.get("MAPBOX_TOKEN", "pk.eyJ1IjoibW9vbmx5MTIiLCJhIjoiY204bjNreGduMG1weTJtcHE5OGdtejJvNCJ9.pdpFMcxEu9w0np44GEEu4g")
     return JSONResponse(status_code=200, content={"token": token})
+
+
+@app.get("/admin")
+def admin_page():
+    return FileResponse("templates/admin.html")
+
+
+@app.get("/admin/usuarios")
+async def admin_usuarios():
+    try:
+        usuarios = db.obtener_todos_usuarios()
+        return {"usuarios": usuarios}
+    except Exception as e:
+        print(f"Error al obtener usuarios: {str(e)}")
+        return JSONResponse(
+            status_code=500,
+            content={"message": f"Error al obtener usuarios: {str(e)}"}
+        )
+
+@app.delete("/api/admin/eliminar-usuario/{usuario_id}")
+async def admin_eliminar_usuario(usuario_id: int):
+    try:
+        # Por ahora, permitimos la eliminación sin verificar token para pruebas
+        if db.eliminar_usuario(usuario_id):
+            return JSONResponse(status_code=200, content={"message": "Usuario eliminado correctamente"})
+        else:
+            return JSONResponse(status_code=404, content={"message": "Usuario no encontrado"})
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"message": f"Error al eliminar usuario: {str(e)}"})
