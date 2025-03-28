@@ -1,10 +1,3 @@
-// static/JavaScript/api-helper.js
-
-// Función para obtener el token desde cualquier almacenamiento
-function getToken() {
-    return sessionStorage.getItem('token') || localStorage.getItem('token');
-}
-
 // Función para hacer peticiones autenticadas
 async function fetchAutenticado(url, options = {}) {
     const token = getToken();
@@ -45,13 +38,19 @@ function getUsuarioActual() {
     return userData ? JSON.parse(userData) : null;
 }
 
-// Verificar autenticación con el servidor
+// Modificación de api-helper.js
+function getToken() {
+    // Simplificar: usar solo localStorage
+    return localStorage.getItem('token');
+}
+
 async function verificarAutenticacion() {
     const token = getToken();
+    const paginasAutenticadas = ['/publicar', '/mi-perfil', '/mis-propiedades'];
 
     if (token) {
         try {
-            // Verificar validez del token con el servidor
+            // Verificar token con el servidor
             const response = await fetch('/api/usuario', {
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -59,18 +58,25 @@ async function verificarAutenticacion() {
             });
 
             if (!response.ok) {
-                // Token inválido, eliminar credenciales
-                sessionStorage.removeItem('token');
-                sessionStorage.removeItem('username');
+                // Token inválido, limpiar y redirigir
                 localStorage.removeItem('token');
                 localStorage.removeItem('username');
+
+                if (paginasAutenticadas.includes(window.location.pathname)) {
+                    window.location.href = '/';
+                    return;
+                }
             }
         } catch (error) {
             console.error('Error verificando autenticación:', error);
+
+            if (paginasAutenticadas.includes(window.location.pathname)) {
+                window.location.href = '/';
+                return;
+            }
         }
     } else {
-        // No hay token, verificar si estamos en una página protegida
-        const paginasAutenticadas = ['/publicar', '/mi-perfil', '/mis-propiedades'];
+        // No hay token, verificar si estamos en página protegida
         if (paginasAutenticadas.includes(window.location.pathname)) {
             window.location.href = '/';
             return;

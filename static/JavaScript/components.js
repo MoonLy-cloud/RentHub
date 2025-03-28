@@ -227,8 +227,7 @@ function initAuthModals() {
         });
     }
 
-    // Inicializar formulario de login
-    // Inicializar formulario de login
+    // Modificación en components.js
     const loginForm = document.getElementById('login-modal-form');
     if (loginForm) {
         loginForm.addEventListener('submit', async function(e) {
@@ -236,7 +235,6 @@ function initAuthModals() {
 
             const email = document.getElementById('email-modal').value;
             const password = document.getElementById('password-modal').value;
-            const rememberMe = document.getElementById('remember-me-modal').checked;
 
             try {
                 const response = await fetch('/login', {
@@ -248,17 +246,9 @@ function initAuthModals() {
                 const data = await response.json();
 
                 if (response.ok) {
-                    // Si "Recordarme" está marcado, guardar en localStorage (persistente)
-                    // Si no, guardar en sessionStorage (se borra al cerrar el navegador)
-                    if (rememberMe) {
-                        localStorage.setItem('token', data.token);
-                        localStorage.setItem('username', data.usuario.nombre);
-                        localStorage.setItem('remember_session', 'true');
-                    } else {
-                        sessionStorage.setItem('token', data.token);
-                        sessionStorage.setItem('username', data.usuario.nombre);
-                        localStorage.removeItem('remember_session');
-                    }
+                    // Guardar siempre en localStorage
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('username', data.usuario.nombre);
 
                     // Cerrar modal
                     bootstrap.Modal.getInstance(document.getElementById('loginModal')).hide();
