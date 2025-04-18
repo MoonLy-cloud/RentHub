@@ -84,10 +84,12 @@ class Transaccion(Base):
     id_transaccion = Column(Integer, primary_key=True)
     id_usuario = Column(Integer, ForeignKey('usuario.id_usuario'))
     id_propiedad = Column(Integer, ForeignKey('propiedad.id_propiedad'))
-    id_cliente_dueno = Column(Integer, ForeignKey('cliente_dueno.id_cliente_dueno'))
+    id_cliente_dueno = Column(Integer, ForeignKey('cliente_dueno.id_cliente_dueno'), nullable=True)
     monto_total = Column(Float)
-    monto_dueno = Column(Float)
+    monto_dueno = Column(Float, nullable=True)
     fecha = Column(DateTime, default=datetime.utcnow)
+    orden_id = Column(String, nullable=True)  # Añadir campo para ID de orden
+    estado = Column(String, nullable=True)    # Añadir campo para estado
 
     usuario = relationship("Usuario")
     propiedad = relationship("Propiedad")

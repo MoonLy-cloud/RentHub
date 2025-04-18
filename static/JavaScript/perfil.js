@@ -345,6 +345,7 @@ function inicializarEventos() {
         // Cargar datos del perfil
         cargarPerfil();
         cargarMisPropiedades();
+        cargarPropiedadesRentadas(); // Añadir esta línea
 
         // Configurar formulario de edición
         document.getElementById('editar-perfil-form').addEventListener('submit', function(e) {
@@ -385,6 +386,105 @@ function inicializarEventos() {
             });
         }
     });
+}
+
+function cargarPropiedadesRentadas() {
+    const contenedor = document.getElementById('mis-propiedades-rentadas');
+    contenedor.innerHTML = `
+        <div class="col-12 text-center py-4">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+            <p class="mt-2">Cargando propiedades rentadas...</p>
+        </div>
+    `;
+
+    fetchAutenticado('/api/mis-transacciones')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Error al obtener transacciones');
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log("Transacciones recibidas:", data); // Depuración
+
+            if (!data.transacciones || data.transacciones.length === 0) {
+                contenedor.innerHTML = `
+                    <div class="col-12 text-center py-4">
+                        <i class="bi bi-house-slash fs-1 text-muted"></i>
+                        <p class="mt-2">No has rentado ninguna propiedad todavía.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Limpiar el contenedor
+            contenedor.innerHTML = '';
+
+            // Mostrar cada transacción
+            data.transacciones.forEach(transaccion => {
+                console.log("Procesando transacción:", transaccion); // Depuración
+
+                const propiedad = transaccion.propiedad || {};
+                const inquilino = transaccion.inquilino || {};
+                const fecha = transaccion.fecha ? new Date(transaccion.fecha).toLocaleDateString() : 'Fecha no disponible';
+
+                const elemento = document.createElement('div');
+                elemento.className = 'col-md-12 mb-3';
+                elemento.innerHTML = `
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-header bg-success bg-opacity-25 py-2">
+                            <small class="text-muted">Fecha: ${fecha}</small>
+                            <span class="badge bg-success float-end">ID: ${transaccion.orden_id || 'N/A'}</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex mb-3">
+                                <img src="${propiedad.imagen || '/static/imgs/property.jpg'}"
+                                    class="rounded me-3" style="width: 80px; height: 80px; object-fit: cover;"
+                                    alt="${propiedad.nombre || 'Propiedad'}">
+                                <div>
+                                    <h5 class="card-title mb-1">${propiedad.nombre || 'Propiedad rentada'}</h5>
+                                    <p class="text-muted small mb-1">${propiedad.direccion || 'Sin dirección'}</p>
+                                    <div class="d-flex align-items-center">
+                                        <span class="badge bg-info me-2">Monto: $${transaccion.monto_total || 0}</span>
+                                        <span class="badge bg-success">Ganancia: $${transaccion.monto_dueno || 0}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr>
+
+                            <div class="d-flex align-items-center">
+                                <h6 class="mb-0">Rentada por:</h6>
+                            </div>
+
+                            <div class="d-flex align-items-center mt-2">
+                                <img src="${inquilino.imagen_perfil || '/static/imgs/user.gif'}"
+                                    class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;">
+                                <div>
+                                    <h6 class="mb-0">${inquilino.nombre || 'Usuario'} ${inquilino.apellido1 || ''} ${inquilino.apellido2 || ''}</h6>
+                                    <p class="text-muted small mb-0">${inquilino.correo || 'Usuario anónimo'}</p>
+                                    ${inquilino.correo ? `<a href="mailto:${inquilino.correo}" class="btn btn-sm btn-outline-primary mt-1">
+                                        <i class="bi bi-envelope"></i> Contactar
+                                    </a>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                contenedor.appendChild(elemento);
+            });
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            contenedor.innerHTML = `
+                <div class="col-12 text-center py-4">
+                    <i class="bi bi-exclamation-triangle fs-1 text-danger"></i>
+                    <p class="mt-2">Error al cargar propiedades rentadas: ${error.message}</p>
+                </div>
+            `;
+        });
 }
 
 function cargarPerfil() {

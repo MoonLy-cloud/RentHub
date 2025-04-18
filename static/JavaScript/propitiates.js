@@ -1,6 +1,59 @@
 document.addEventListener('DOMContentLoaded', function() {
+    const searchForm = document.getElementById('search-form');
+    const searchInput = document.getElementById('search-input');
     const propertyList = document.getElementById('property-list');
     const editarPropiedadForm = document.getElementById('editar-propiedad-form');
+
+    // Evento para búsqueda en tiempo real
+    searchInput.addEventListener('input', debounce(function() {
+        const query = searchInput.value.trim().toLowerCase();
+        buscarPropiedades(query);
+    }, 300)); // Debounce de 300ms para no hacer demasiadas peticiones
+
+    // Mantener el evento submit para compatibilidad
+    searchForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const query = searchInput.value.trim().toLowerCase();
+        buscarPropiedades(query);
+    });
+
+    // Función para buscar propiedades
+    async function buscarPropiedades(query) {
+        try {
+            propertyList.innerHTML = '<div class="col-12 text-center">Buscando propiedades...</div>';
+
+            let url = '/api/propiedades';
+            if (query) {
+                url += `?search=${encodeURIComponent(query)}`;
+            }
+
+            const response = await fetch(url);
+            const data = await response.json();
+
+            if (response.ok) {
+                mostrarPropiedades(data.propiedades);
+            } else {
+                console.error('Error al buscar propiedades:', data.message);
+                propertyList.innerHTML = '<div class="col-12 text-center">Error en la búsqueda</div>';
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            propertyList.innerHTML = '<div class="col-12 text-center">Error de conexión</div>';
+        }
+    }
+
+    // Función debounce para evitar múltiples peticiones
+    function debounce(func, wait) {
+        let timeout;
+        return function() {
+            const context = this;
+            const args = arguments;
+            clearTimeout(timeout);
+            timeout = setTimeout(() => {
+                func.apply(context, args);
+            }, wait);
+        };
+    }
 
     if (editarPropiedadForm) {
         editarPropiedadForm.addEventListener('submit', function(e) {
@@ -16,6 +69,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
 
     // Función para verificar si el usuario está autenticado
     function estaAutenticado() {
@@ -51,44 +105,224 @@ document.addEventListener('DOMContentLoaded', function() {
 
         let html = '';
         propiedades.forEach(propiedad => {
+            // Verificar si la propiedad está disponible
+            const estaDisponible = propiedad.disponible === 1 || propiedad.disponible === true;
+
+            // Clase CSS para propiedades no disponibles
+            const cardClass = estaDisponible ? 'propiedad-card' : 'propiedad-card no-disponible';
+
             html += `
-            <div class="col-md-4 mb-4">
-                <div class="card">
-                    <img src="${propiedad.imagen || '/static/imgs/default-property.jpg'}" class="card-img-top" alt="${propiedad.nombre}">
-                    <div class="card-body">
-                        <h5 class="card-title">${propiedad.nombre}</h5>
-                        <p class="card-text">${propiedad.direccion}</p>
-                        <p class="card-text">${propiedad.descripcion}</p>
-                        <p class="card-text"><strong>Precio:</strong> $${propiedad.precio}</p>
+        <div class="col-md-4 mb-4">
+            <div class="card ${cardClass} shadow-sm">
+                <div class="propiedad-img-container">
+                    <img src="${propiedad.imagen || '/static/imgs/default-property.jpg'}"
+                         class="card-img-top propiedad-img"
+                         alt="${propiedad.nombre}">
+                    ${!estaDisponible ? '<div class="no-disponible-badge">Rentada</div>' : ''}
+                </div>
+                <div class="card-body propiedad-body">
+                    <h5 class="card-title">${propiedad.nombre}</h5>
+                    <p class="card-text">${propiedad.direccion}</p>
+                    <p class="card-text propiedad-description">${propiedad.descripcion}</p>
+                    <p class="card-text"><strong>Precio:</strong> $${propiedad.precio}</p>
+                    <div class="propiedad-actions mt-3">
                         <button class="btn btn-primary ver-detalles" data-id="${propiedad.id}">Ver detalles</button>
-                        ${estaAutenticado() ? `
-                        <div class="mt-2">
-                            <button class="btn btn-outline-success contactar" data-id="${propiedad.id}">Contactar</button>
-                        </div>` : ''}
+                        ${estaDisponible ? `
+                        <button class="btn btn-success btn-rentar mt-2" 
+                                data-id="${propiedad.id}" 
+                                data-price="${propiedad.precio}" 
+                                data-name="${propiedad.nombre}">
+                            Rentar con PayPal
+                        </button>
+                        ` : `
+                        <button class="btn btn-secondary mt-2" disabled>
+                            No disponible
+                        </button>
+                        `}
                     </div>
                 </div>
             </div>
-            `;
+        </div>
+        `;
         });
 
         propertyList.innerHTML = html;
 
         // Agregar event listeners para los botones de detalles
         document.querySelectorAll('.ver-detalles').forEach(button => {
-            button.addEventListener('click', async function() {
+            button.addEventListener('click', function() {
                 const propiedadId = this.getAttribute('data-id');
                 mostrarDetallesPropiedad(propiedadId);
             });
         });
 
-        // Agregar event listeners para los botones de contactar (solo para usuarios autenticados)
-        if (estaAutenticado()) {
-            document.querySelectorAll('.contactar').forEach(button => {
-                button.addEventListener('click', function() {
-                    const propiedadId = this.getAttribute('data-id');
-                    contactarPropietario(propiedadId);
-                });
+        // Configurar botones de PayPal solo para propiedades disponibles
+        document.querySelectorAll('.btn-rentar').forEach(button => {
+            button.addEventListener('click', function() {
+                const propiedadId = this.getAttribute('data-id');
+                const precio = this.getAttribute('data-price');
+                const nombre = this.getAttribute('data-name');
+                iniciarProcesoPago(propiedadId, precio, nombre);
             });
+        });
+    }
+
+    function iniciarProcesoPago(propiedadId, precio, nombre) {
+        // Eliminar la verificación de autenticación al inicio
+        // Continuar directamente con el proceso de pago
+
+        // Verificar si existe algún modal previo y eliminarlo
+        const modalExistente = document.getElementById('pagoModal');
+        if (modalExistente) {
+            const modalInstance = bootstrap.Modal.getInstance(modalExistente);
+            if (modalInstance) modalInstance.dispose();
+            modalExistente.remove();
+        }
+
+        // Crear modal para el pago
+        const modalHtml = `
+    <div class="modal fade" id="pagoModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Rentar propiedad</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Propiedad: ${nombre}</p>
+                    <p>Precio: $${precio}</p>
+                    <div id="paypal-button-container"></div>
+                    <div class="mt-3 alert alert-info">
+                        <strong>Modo de prueba:</strong> Usa los siguientes datos:<br>
+                        Email: sb-43aoes28379307@personal.example.com<br>
+                        Contraseña: 12345678
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    `;
+
+        // Agregar modal al DOM
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+        // Mostrar modal
+        const pagoModal = new bootstrap.Modal(document.getElementById('pagoModal'));
+        pagoModal.show();
+
+        // Limpiar y renderizar botón de PayPal una sola vez
+        const paypalContainer = document.getElementById('paypal-button-container');
+        paypalContainer.innerHTML = ''; // Limpiar el contenedor antes de renderizar
+
+        // Renderizar botón de PayPal
+        paypal.Buttons({
+            style: {
+                color: 'blue',
+                shape: 'rect',
+                label: 'pay'
+            },
+            // Configuración para crear una orden
+            createOrder: function(data, actions) {
+                return actions.order.create({
+                    purchase_units: [{
+                        description: `Renta de: ${nombre}`,
+                        amount: {
+                            value: precio
+                        }
+                    }]
+                });
+            },
+            // Capturar el pago cuando se completa
+            onApprove: function(data, actions) {
+                return actions.order.capture().then(function(orderData) {
+                    // Registrar la transacción en el servidor
+                    registrarTransaccion(propiedadId, orderData)
+                        .then(response => {
+                            // Mostrar mensaje de éxito
+                            Swal.fire({
+                                icon: 'success',
+                                title: '¡Pago completado!',
+                                text: 'Has rentado esta propiedad con éxito',
+                                confirmButtonColor: '#3085d6'
+                            }).then(() => {
+                                // Cerrar el modal de pago
+                                const pagoModal = bootstrap.Modal.getInstance(document.getElementById('pagoModal'));
+                                if (pagoModal) pagoModal.hide();
+
+                                // Recargar la página para mostrar los cambios
+                                window.location.reload();
+                            });
+                        })
+                        .catch(error => {
+                            console.error("Error al registrar la transacción:", error);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: 'Hubo un problema al registrar tu pago. El pago se realizó pero hubo un error interno.',
+                                confirmButtonColor: '#3085d6'
+                            });
+                        });
+                });
+            },
+            // Manejar errores
+            onError: function(err) {
+                console.error('Error en el pago:', err);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error en el pago',
+                    text: 'Ha ocurrido un error al procesar el pago',
+                    confirmButtonColor: '#3085d6'
+                });
+            }
+        }).render('#paypal-button-container');
+
+        // Evento para limpiar cuando el modal se cierra
+        document.getElementById('pagoModal').addEventListener('hidden.bs.modal', function () {
+            // Eliminar el modal del DOM al cerrarse para evitar duplicados
+            setTimeout(() => {
+                this.remove();
+            }, 300);
+        });
+    }
+
+    async function registrarTransaccion(propiedadId, orderData) {
+        try {
+            // Usar la función getToken() del api-helper.js en lugar de authToken
+            const token = window.getToken();
+
+            // Datos de la transacción
+            const transaccionData = {
+                propiedad_id: propiedadId,
+                orden_id: orderData.id,
+                monto: orderData.purchase_units[0].amount.value,
+                estado: orderData.status
+            };
+
+            // Configurar headers con o sin token
+            const headers = {
+                'Content-Type': 'application/json'
+            };
+
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+
+            // Enviar petición
+            const response = await fetch('/api/transacciones', {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify(transaccionData)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Error al registrar la transacción');
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error('Error en registrarTransaccion:', error);
+            throw error;
         }
     }
 

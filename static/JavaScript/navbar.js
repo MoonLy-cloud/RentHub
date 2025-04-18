@@ -3,11 +3,10 @@ document.addEventListener('DOMContentLoaded', function() {
     if (navbarContainer) {
         navbarContainer.innerHTML = `
       <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
-        <div class="container">
-          <a class="navbar-brand" href="/">
-            <img src="/static/imgs/logo.png" alt="RentHub" class="logo-img">
-            <span class="brand-text">RentHub</span>
-          </a>
+          <div class="container">
+            <a class="navbar-brand fw-bold text-primary" href="/">
+              <img src="/static/imgs/logo.png" alt="RentHub" class="navbar-logo" height="35" width="auto">
+            </a>
           <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
           </button>

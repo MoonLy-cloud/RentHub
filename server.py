@@ -1,3 +1,5 @@
+from urllib import request
+
 import jsonify
 from fastapi import FastAPI, Request, Response, Cookie, Depends, Body
 from fastapi.staticfiles import StaticFiles
@@ -208,6 +210,22 @@ async def get_mis_propiedades(request: Request):
 @app.get("/propiedades")
 def read_propiedades():
     return FileResponse("templates/propitiates.html")
+
+
+@app.get("/api/propiedades")
+async def obtener_propiedades(search: str = None):
+    propiedades = db.obtener_propiedades()
+
+    if search:
+        search = search.lower()
+        propiedades = [
+            p for p in propiedades
+            if (p.get('nombre') and search in p['nombre'].lower()) or
+               (p.get('direccion') and search in p['direccion'].lower()) or
+               (p.get('descripcion') and search in p['descripcion'].lower())
+        ]
+
+    return JSONResponse(status_code=200, content={"propiedades": propiedades})
 
 
 @app.get("/api/propiedades")
@@ -467,6 +485,97 @@ async def eliminar_cuenta(request: Request):
             status_code=500,
             content={"message": f"Error: {str(e)}", "success": False}
         )
+
+
+@app.post("/api/transacciones")
+async def registrar_transaccion(request: Request):
+    # Log para depuración
+    print("\n----- NUEVA TRANSACCIÓN -----")
+
+    # Intentar obtener el token, pero no requerirlo
+    auth_header = request.headers.get("Authorization")
+    usuario_id = None
+
+    # Si hay token, validarlo
+    if auth_header and auth_header.startswith("Bearer "):
+        token = auth_header.split(" ")[1]
+        try:
+            payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+            usuario_id = payload["id"]
+            print(f"Usuario autenticado ID: {usuario_id}")
+        except Exception as e:
+            print(f"Error en token: {str(e)}")
+    else:
+        print("Transacción anónima (sin token)")
+
+    try:
+        data = await request.json()
+        print(f"Datos recibidos: {data}")
+
+        # Registrar la transacción con o sin usuario
+        transaccion_id = db.registrar_transaccion(
+            usuario_id=usuario_id,  # Puede ser None si no hay usuario autenticado
+            propiedad_id=data["propiedad_id"],
+            orden_id=data["orden_id"],
+            monto=data["monto"],
+            estado=data["estado"]
+        )
+
+        print(f"Transacción registrada con ID: {transaccion_id}")
+
+        # Actualizar estado de la propiedad (marcarla como no disponible)
+        db.actualizar_disponibilidad_propiedad(data["propiedad_id"], False)
+
+        return JSONResponse(status_code=200, content={
+            "message": "Transacción registrada correctamente",
+            "transaccion_id": transaccion_id
+        })
+    except Exception as e:
+        print(f"ERROR EN TRANSACCIÓN: {str(e)}")
+        return JSONResponse(status_code=500, content={"message": f"Error: {str(e)}"})
+
+
+@app.get("/api/mis-transacciones")
+async def get_mis_transacciones(request: Request):
+    token_data = verify_token_header(request)
+    if not token_data:
+        return JSONResponse(status_code=401, content={"message": "No autorizado"})
+
+    try:
+        # Obtener todas las transacciones donde el usuario es propietario
+        transacciones = db.obtener_transacciones_por_propietario(token_data["id"])
+
+        # Enriquecer los datos con información de la propiedad y el inquilino
+        for transaccion in transacciones:
+            # Obtener datos de la propiedad
+            propiedad = db.obtener_propiedad_por_id(transaccion["id_propiedad"])
+            if propiedad:
+                transaccion["propiedad"] = propiedad
+
+            # Obtener datos del inquilino (usuario que rentó)
+            if transaccion["id_usuario"]:
+                inquilino = db.obtener_usuario_por_id(transaccion["id_usuario"])
+                if inquilino:
+                    # Solo compartir información pública del inquilino
+                    transaccion["inquilino"] = {
+                        "id": inquilino["id"],
+                        "nombre": inquilino["nombre"],
+                        "apellido1": inquilino["apellido1"],
+                        "apellido2": inquilino["apellido2"],
+                        "correo": inquilino["correo"],
+                        "imagen_perfil": inquilino.get("imagen_perfil", "/static/imgs/user.gif")
+                    }
+                else:
+                    transaccion["inquilino"] = {
+                        "nombre": "Usuario",
+                        "apellido1": "Desconocido",
+                        "correo": "No disponible",
+                        "imagen_perfil": "/static/imgs/user.gif"
+                    }
+
+        return JSONResponse(status_code=200, content={"transacciones": transacciones})
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"message": f"Error: {str(e)}"})
 
 
 @app.post("/api/conectar-paypal")

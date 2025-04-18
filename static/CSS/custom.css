@@ -10,11 +10,31 @@
     --bs-danger: #dc3545;
 }
 
-/* Estilos para la navbar */
+/* Reducir altura del navbar */
 .navbar {
-    padding-top: 12px;
-    padding-bottom: 12px;
-    transition: all 0.3s ease;
+    padding-top: 0.3rem !important;
+    padding-bottom: 0.3rem !important;
+    min-height: 50px !important;
+}
+
+/* Añadir al archivo static/CSS/custom.css */
+.navbar-logo {
+    width: auto;
+    height: 40px; /* Aumenta la altura según necesites */
+    max-height: 45px;
+    transition: transform 0.3s ease;
+}
+
+/* Efecto hover opcional */
+.navbar-logo:hover {
+    transform: scale(1.05);
+}
+
+/* Para dispositivos móviles */
+@media (max-width: 768px) {
+    .navbar-logo {
+        height: 35px; /* Ligeramente más pequeño en móviles */
+    }
 }
 
 .navbar-brand .brand-text {

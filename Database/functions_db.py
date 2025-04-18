@@ -1,3 +1,5 @@
+import datetime
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 import os
@@ -323,3 +325,116 @@ def obtener_todos_usuarios():
         resultado.append(usuario_dict)
 
     return resultado
+
+
+def registrar_transaccion(usuario_id, propiedad_id, orden_id, monto, estado):
+    """Registra una transacción de pago en la base de datos"""
+    try:
+        print(f"Registrando transacción: Usuario={usuario_id}, Propiedad={propiedad_id}")
+
+        # Obtener información de la propiedad
+        propiedad = session.query(Propiedad).filter(Propiedad.id_propiedad == propiedad_id).first()
+
+        if not propiedad:
+            raise Exception(f"No se encontró la propiedad con ID {propiedad_id}")
+
+        # Crear objeto de transacción
+        transaccion = Transaccion(
+            id_usuario=usuario_id,  # Usuario que rentó (puede ser None para anónimos)
+            id_propiedad=propiedad_id,
+            id_cliente_dueno=propiedad.id_propietario,  # Propietario de la propiedad
+            monto_total=float(monto),
+            monto_dueno=float(monto) * 0.85,  # El propietario recibe 85%
+            fecha=datetime.datetime.now(),
+            orden_id=orden_id,
+            estado=estado
+        )
+
+        session.add(transaccion)
+        session.commit()
+        print(f"Transacción guardada con ID: {transaccion.id_transaccion}")
+
+        # Actualizar disponibilidad de la propiedad
+        actualizar_disponibilidad_propiedad(propiedad_id, False)
+
+        return transaccion.id_transaccion
+    except Exception as e:
+        session.rollback()
+        print(f"ERROR al registrar transacción: {str(e)}")
+        raise e
+
+
+def obtener_transacciones_por_propietario(usuario_id):
+    """
+    Obtiene todas las transacciones donde el usuario especificado es el propietario
+    de las propiedades rentadas.
+    """
+    try:
+        # Usar la sesión global en lugar de crear una nueva
+        transacciones = (
+            session.query(Transaccion)
+            .filter(Transaccion.id_cliente_dueno == usuario_id)
+            .all()
+        )
+
+        resultado = []
+        for t in transacciones:
+            # Obtener datos de la propiedad
+            propiedad = session.query(Propiedad).filter(Propiedad.id_propiedad == t.id_propiedad).first()
+            propiedad_data = {}
+            if propiedad:
+                propiedad_data = {
+                    'id': propiedad.id_propiedad,
+                    'nombre': propiedad.nombre,
+                    'direccion': propiedad.direccion,
+                    'imagen': propiedad.imagen
+                }
+
+            # Obtener datos del inquilino si existe
+            inquilino_data = {}
+            if t.id_usuario:
+                inquilino = session.query(Usuario).filter(Usuario.id_usuario == t.id_usuario).first()
+                if inquilino:
+                    inquilino_data = {
+                        'nombre': inquilino.nombre,
+                        'apellido1': inquilino.apellido_p,
+                        'apellido2': inquilino.apellido_m,
+                        'correo': inquilino.correo,
+                        'imagen_perfil': inquilino.imagen_perfil
+                    }
+
+            resultado.append({
+                "id": t.id_transaccion,
+                "id_usuario": t.id_usuario,
+                "id_propiedad": t.id_propiedad,
+                "monto_total": t.monto_total,
+                "monto_dueno": t.monto_dueno or (t.monto_total * 0.85),
+                "fecha": t.fecha.isoformat() if t.fecha else None,
+                "orden_id": t.orden_id,
+                "estado": t.estado,
+                "propiedad": propiedad_data,
+                "inquilino": inquilino_data
+            })
+
+        return resultado
+    except Exception as e:
+        print(f"Error en obtener_transacciones_por_propietario: {str(e)}")
+        return []
+
+
+def actualizar_disponibilidad_propiedad(propiedad_id, disponible):
+    """Actualiza el estado de disponibilidad de una propiedad"""
+    try:
+        propiedad = session.query(Propiedad).filter(Propiedad.id_propiedad == propiedad_id).first()
+        if propiedad:
+            propiedad.disponible = 1 if disponible else 0
+            session.commit()
+            print(f"Propiedad {propiedad_id} actualizada a disponible={disponible}")
+            return True
+        else:
+            print(f"No se encontró la propiedad con ID {propiedad_id}")
+            return False
+    except Exception as e:
+        session.rollback()
+        print(f"Error al actualizar disponibilidad de propiedad: {str(e)}")
+        return False
