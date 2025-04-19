@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="../static/CSS/variables.css">
     <link rel="stylesheet" href="../static/CSS/custom.css">
     <link rel="stylesheet" href="../static/CSS/auth-modal.css">
+    <link rel="stylesheet" href="../static/CSS/index.css">
 
     <!-- Fuentes -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -25,7 +26,120 @@
 
 <!-- Contenido principal -->
 <main>
-    <!-- Aquí va el contenido principal de tu página -->
+
+    <section class="hero-section">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <h1 class="hero-title">Encuentra el salón perfecto para tu evento</h1>
+                    <p class="hero-text">Busca, compara y reserva los mejores salones para fiestas, conferencias, bodas y cualquier celebración.</p>
+                </div>
+                <div class="col-lg-6 d-none d-lg-block">
+                    <img src="/static/imgs/hero2.jpeg" alt="Salón de eventos" class="img-fluid rounded hero-image">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Cómo funciona -->
+<section class="how-it-works-section">
+    <div class="container">
+        <h2 class="section-title text-center">¿Cómo funciona RentHub?</h2>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="step-card">
+                    <div class="step-number">1</div>
+                    <h3>Busca</h3>
+                    <p>Explora nuestra selección de salones y escoge según tus necesidades.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="step-card">
+                    <div class="step-number">2</div>
+                    <h3>Compara</h3>
+                    <p>Revisa precios, capacidad y servicios para encontrar la mejor opción.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="step-card">
+                    <div class="step-number">3</div>
+                    <h3>Contacta</h3>
+                    <p>Contacta con el dueño de tu salón favorito.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Ventajas de usar nuestra plataforma -->
+<section class="benefits-section">
+    <div class="container">
+        <h2 class="section-title text-center">¿Por qué elegir RentHub?</h2>
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <i class="bi bi-search"></i>
+                    </div>
+                    <div class="benefit-content">
+                        <h3>Búsqueda simplificada</h3>
+                        <p>Filtra por ubicación, capacidad, precio y más para encontrar exactamente lo que necesitas sin perder tiempo.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <i class="bi bi-shield-check"></i>
+                    </div>
+                    <div class="benefit-content">
+                        <h3>Verificación de calidad</h3>
+                        <p>Todos nuestros rentadores han sido verificados para garantizar que cumplen con los estándares de calidad y seguridad.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <i class="bi bi-piggy-bank"></i>
+                    </div>
+                    <div class="benefit-content">
+                        <h3>Mejores precios</h3>
+                        <p>Comparamos cientos de opciones para ofrecerte los mejores salones al mejor precio garantizado.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <i class="bi bi-calendar-check"></i>
+                    </div>
+                    <div class="benefit-content">
+                        <h3>Pagos instantáneos</h3>
+                        <p>Escoge tu salon y paga de manera segura e instantánea.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA para registrarse -->
+<section class="cta-section">
+    <div class="container">
+        <div class="cta-box">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <h2>¿Tienes un salón para eventos?</h2>
+                    <p>Regístrate como anfitrión y comienza a publicar tus espacios para que miles de personas los descubran.</p>
+                </div>
+                <div class="col-lg-4 text-lg-end">
+                    <button class="btn btn-light btn-lg" data-bs-toggle="modal" data-bs-target="#registerModal">Regístrate ahora</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 </main>
 
 <!-- Componente de modales de autenticación -->
