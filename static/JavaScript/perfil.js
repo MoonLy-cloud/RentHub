@@ -618,9 +618,6 @@ function cargarMisPropiedades() {
 }
 
 function actualizarPerfil() {
-    const nombre = document.getElementById('nombre').value;
-    const apellido1 = document.getElementById('apellido1').value;
-    const apellido2 = document.getElementById('apellido2').value;
     const correo = document.getElementById('correo').value;
     const passwordActual = document.getElementById('password_actual').value;
     const passwordNuevo = document.getElementById('password_nuevo').value;
@@ -691,77 +688,134 @@ function actualizarPerfil() {
 }
 
 function conectarPayPal() {
-    // Simulación de conexión con PayPal
-    const email = prompt('Por favor, introduce tu correo de PayPal:');
+    Swal.fire({
+        title: 'Conectar PayPal',
+        text: 'Introduce tu correo electrónico de PayPal para recibir pagos',
+        input: 'email',
+        inputPlaceholder: 'correo@ejemplo.com',
+        showCancelButton: true,
+        cancelButtonText: 'Cancelar',
+        confirmButtonText: 'Conectar',
+        confirmButtonColor: 'var(--bs-primary)',
+        inputValidator: (value) => {
+            if (!value) {
+                return 'Debes ingresar un correo electrónico';
+            }
 
-    if (!email) return;
+            // Validación básica de formato de correo
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(value)) {
+                return 'Por favor, ingresa un correo electrónico válido';
+            }
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            const email = result.value;
 
-    fetchAutenticado('/api/conectar-paypal', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ paypal_email: email })
-    })
-        .then(response => {
-            if (!response.ok) throw new Error('Error al conectar PayPal');
-            return response.json();
-        })
-        .then(data => {
+            // Mostrar loading mientras se procesa
             Swal.fire({
-                title: '¡Éxito!',
-                text: 'Cuenta de PayPal conectada correctamente',
-                icon: 'success',
-                confirmButtonColor: 'var(--bs-primary)'
+                title: 'Conectando...',
+                text: 'Estableciendo conexión con PayPal',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
             });
-            mostrarPayPalConectado(email);
-        })
-        .catch(error => {
-            Swal.fire({
-                title: 'Error',
-                text: error.message,
-                icon: 'error',
-                confirmButtonColor: 'var(--bs-primary)'
-            });
-            console.error('Error:', error);
-        });
+
+            fetchAutenticado('/api/conectar-paypal', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ paypal_email: email })
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(err => {
+                            throw new Error(err.message || 'Error al conectar PayPal');
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    Swal.fire({
+                        title: '¡Conectado con éxito!',
+                        text: 'Tu cuenta de PayPal ha sido vinculada correctamente',
+                        icon: 'success',
+                        confirmButtonColor: 'var(--bs-primary)'
+                    });
+                    mostrarPayPalConectado(email);
+                })
+                .catch(error => {
+                    Swal.fire({
+                        title: 'Error',
+                        text: error.message || 'No se pudo conectar la cuenta de PayPal',
+                        icon: 'error',
+                        confirmButtonColor: 'var(--bs-primary)'
+                    });
+                    console.error('Error:', error);
+                });
+        }
+    });
 }
 
 function desconectarPayPal() {
-    if (!confirm('¿Estás seguro de que quieres desconectar tu cuenta de PayPal?')) {
-        return;
-    }
-
-    fetchAutenticado('/api/desconectar-paypal', {
-        method: 'DELETE'
-    })
-        .then(response => {
-            if (!response.ok) throw new Error('Error al desconectar PayPal');
-            return response.json();
-        })
-        .then(data => {
+    Swal.fire({
+        title: '¿Desconectar PayPal?',
+        text: 'Ya no podrás recibir pagos directamente hasta que vuelvas a conectar una cuenta',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, desconectar',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#dc3545',
+        cancelButtonColor: 'var(--bs-secondary)'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Mostrar loading
             Swal.fire({
-                title: '¡Éxito!',
-                text: 'Cuenta de PayPal desconectada correctamente',
-                icon: 'success',
-                confirmButtonColor: 'var(--bs-primary)'
+                title: 'Desconectando...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
             });
 
-            // Actualizar la interfaz
-            document.getElementById('status-paypal').textContent = 'No conectado';
-            document.getElementById('email-paypal').textContent = 'Conecta tu cuenta de PayPal para recibir pagos';
-            document.getElementById('btn-conectar-paypal').style.display = 'inline-block';
-            document.getElementById('btn-desconectar-paypal').style.display = 'none';
-        })
-        .catch(error => {
-            Swal.fire({
-                title: 'Error',
-                text: error.message,
-                icon: 'error',
-                confirmButtonColor: 'var(--bs-primary)'
+            fetchAutenticado('/api/desconectar-paypal', {
+                method: 'DELETE'
             })
-            console.error('Error:', error);
-        });
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(err => {
+                            throw new Error(err.message || 'Error al desconectar PayPal');
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    Swal.fire({
+                        title: 'Desconectado',
+                        text: 'Tu cuenta de PayPal ha sido desvinculada correctamente',
+                        icon: 'success',
+                        confirmButtonColor: 'var(--bs-primary)'
+                    });
+
+                    // Actualizar la interfaz
+                    document.getElementById('status-paypal').textContent = 'No conectado';
+                    document.getElementById('email-paypal').textContent = 'Conecta tu cuenta de PayPal para recibir pagos';
+                    document.getElementById('btn-conectar-paypal').style.display = 'inline-block';
+                    document.getElementById('btn-desconectar-paypal').style.display = 'none';
+                })
+                .catch(error => {
+                    Swal.fire({
+                        title: 'Error',
+                        text: error.message || 'Error al desconectar la cuenta de PayPal',
+                        icon: 'error',
+                        confirmButtonColor: 'var(--bs-primary)'
+                    });
+                    console.error('Error:', error);
+                });
+        }
+    });
 }
 
 function mostrarPayPalConectado(email) {

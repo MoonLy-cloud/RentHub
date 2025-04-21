@@ -43,7 +43,6 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
       </nav>
     `;
-        // Añade al inicio del archivo navbar.js
         // Añade esta función completa en navbar.js
         function actualizarImagenNavbarGlobal() {
             const userImage = localStorage.getItem('user_image');

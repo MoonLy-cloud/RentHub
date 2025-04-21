@@ -123,33 +123,62 @@ function updateAuthUI() {
     }
 }
 
-// Función para cerrar sesión
 function cerrarSesion() {
     Swal.fire({
         title: '¿Cerrar sesión?',
-        text: "¿Estás seguro que deseas salir de tu cuenta?",
+        text: '¿Estás seguro que deseas cerrar tu sesión?',
         icon: 'question',
         showCancelButton: true,
-        confirmButtonColor: 'var(--color-primary)',
-        cancelButtonColor: 'var(--color-secondary)',
+        confirmButtonColor: 'var(--bs-primary)',
+        cancelButtonColor: 'var(--bs-secondary)',
         confirmButtonText: 'Sí, cerrar sesión',
         cancelButtonText: 'Cancelar'
     }).then((result) => {
         if (result.isConfirmed) {
-            // Limpiar ambos almacenamientos
-            sessionStorage.removeItem('token');
-            sessionStorage.removeItem('username');
-            localStorage.removeItem('token');
-            localStorage.removeItem('username');
-            localStorage.removeItem('user_image');
-
-            Swal.fire(
-                '¡Sesión cerrada!',
-                'Has salido de tu cuenta exitosamente.',
-                'success'
-            ).then(() => {
-                window.location.href = '/';
+            // Mostrar indicador de carga
+            Swal.fire({
+                title: 'Cerrando sesión...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
             });
+
+            fetch('/logout', {
+                method: 'GET',
+                credentials: 'same-origin'
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Error al cerrar sesión');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Limpiar datos de sesión
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('username');
+                    localStorage.removeItem('user_id');
+                    localStorage.removeItem('user_image');
+
+                    Swal.fire({
+                        title: '¡Sesión cerrada!',
+                        text: 'Has cerrado sesión correctamente',
+                        icon: 'success',
+                        confirmButtonColor: 'var(--bs-primary)'
+                    }).then(() => {
+                        window.location.href = '/';
+                    });
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'No se pudo cerrar la sesión. Intenta de nuevo.',
+                        icon: 'error',
+                        confirmButtonColor: 'var(--bs-primary)'
+                    });
+                });
         }
     });
 }

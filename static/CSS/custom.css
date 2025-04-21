@@ -20,8 +20,8 @@
 /* Añadir al archivo static/CSS/custom.css */
 .navbar-logo {
     width: auto;
-    height: 40px; /* Aumenta la altura según necesites */
-    max-height: 45px;
+    height: 150px; /* Aumenta la altura según necesites */
+    max-height: 150px;
     transition: transform 0.3s ease;
 }
 
