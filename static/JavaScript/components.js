@@ -1,427 +1,323 @@
-// static/JavaScript/components.js
+/**
+ * Archivo de componentes reutilizables para RentHub
+ */
+
+// Cargar componentes dinámicos cuando el DOM esté listo
 document.addEventListener('DOMContentLoaded', function() {
-    // Cargar componentes con el atributo data-component
-    document.querySelectorAll('[data-component]').forEach(async function(element) {
-        const componentName = element.getAttribute('data-component');
-        await loadComponent(componentName, element);
-    });
+  loadComponents();
+  setupModalHandlers();
+  setupFormValidation();
 });
 
-async function loadComponent(name, targetElement) {
-    try {
-        const response = await fetch(`/static/components/${name}.html`);
-        if (!response.ok) throw new Error(`No se pudo cargar el componente: ${name}`);
-
-        const html = await response.text();
-        targetElement.innerHTML = html;
-
-        // Inicializar comportamientos específicos de componentes
-        if (name === 'auth-modals') {
-            initAuthModals();
-        }
-    } catch (error) {
-        console.error('Error cargando componente:', error);
-        targetElement.innerHTML = `<div class="alert alert-danger">Error cargando el componente ${name}</div>`;
-    }
-}
-
-// Añadir esta función
-function validarCURP(curp) {
-    // Verificación básica de longitud
-    if (!curp || curp.length !== 18) {
-        return {
-            isValid: false,
-            message: "El CURP debe tener exactamente 18 caracteres."
-        };
-    }
-
-    // Expresión regular más simple para validación básica
-    const curpRegex = /^[A-Z]{4}\d{6}[HM][A-Z]{5}\w\d$/;
-
-    if (!curpRegex.test(curp)) {
-        return {
-            isValid: false,
-            message: "El formato del CURP no es válido. Recuerda que debe seguir el patrón: AAAA######HAAAAAA#"
-        };
-    }
-
-    return {
-        isValid: true,
-        message: "CURP válido"
-    };
-
-
-    // Validar estructura básica (esto no garantiza que sea real)
-    const fechaNacimiento = curp.substring(4, 10);
-    const sexo = curp.charAt(10);
-
-    // Validar año (primeros 2 dígitos de la fecha)
-    const anio = parseInt(fechaNacimiento.substring(0, 2));
-    // Validar mes (siguientes 2 dígitos)
-    const mes = parseInt(fechaNacimiento.substring(2, 4));
-    // Validar día (últimos 2 dígitos)
-    const dia = parseInt(fechaNacimiento.substring(4, 6));
-
-    if (mes < 1 || mes > 12) {
-        return {
-            isValid: false,
-            message: "El mes en el CURP no es válido."
-        };
-    }
-
-    if (dia < 1 || dia > 31) {
-        return {
-            isValid: false,
-            message: "El día en el CURP no es válido."
-        };
-    }
-
-    if (sexo !== 'H' && sexo !== 'M') {
-        return {
-            isValid: false,
-            message: "El indicador de sexo en el CURP no es válido."
-        };
-    }
-
-    return {
-        isValid: true,
-        message: "Formato de CURP válido."
-    };
-}
-
-function initAuthModals() {
-    // Cambiar entre modales
-    document.querySelectorAll('.switch-to-register').forEach(link => {
-        link.addEventListener('click', (e) => {
-            e.preventDefault();
-            bootstrap.Modal.getInstance(document.getElementById('loginModal')).hide();
-            new bootstrap.Modal(document.getElementById('registerModal')).show();
+/**
+ * Carga todos los componentes dinámicos en la página
+ */
+async function loadComponents() {
+  // Componentes a cargar
+  const components = [
+    { selector: '[data-component="auth-modals"]', url: '/static/components/auth-modals.html' },
+    { selector: '[data-component="property-card"]', url: '/static/components/property-card.html' },
+    { selector: '#navbar-container', url: '/static/components/navbar.html' }
+  ];
+  
+  // Cargar cada componente en paralelo
+  await Promise.all(components.map(component => {
+    const elements = document.querySelectorAll(component.selector);
+    if (elements.length === 0) return Promise.resolve();
+    
+    return fetch(component.url)
+      .then(response => response.text())
+      .then(html => {
+        elements.forEach(element => {
+          element.innerHTML = html;
+          // Activar scripts dentro del componente si es necesario
+          const scripts = element.querySelectorAll('script');
+          scripts.forEach(script => {
+            const newScript = document.createElement('script');
+            newScript.textContent = script.textContent;
+            document.body.appendChild(newScript);
+          });
         });
+      })
+      .catch(error => console.error(`Error cargando componente ${component.url}:`, error));
+  }));
+  
+  // Inicializar componentes después de cargarlos
+  initializeComponents();
+}
+
+/**
+ * Inicializa los componentes cargados
+ */
+function initializeComponents() {
+  // Inicializar navbar
+  if (typeof initializeNavbar === 'function') {
+    initializeNavbar();
+  }
+  
+  // Comprobar autenticación para ajustar la UI
+  updateAuthUI();
+}
+
+/**
+ * Configura los manejadores para modales
+ */
+function setupModalHandlers() {
+  // Cerrar modales al hacer clic fuera o con el botón de cerrar
+  document.addEventListener('click', function(event) {
+    if (event.target.classList.contains('modal') || 
+        event.target.classList.contains('btn-close')) {
+      const modalId = event.target.closest('.modal').id;
+      const modal = bootstrap.Modal.getInstance(document.getElementById(modalId));
+      if (modal) modal.hide();
+    }
+  });
+  
+  // Evitar que los clics dentro del modal lo cierren
+  document.addEventListener('click', function(event) {
+    if (event.target.closest('.modal-content') && 
+        !event.target.classList.contains('btn-close')) {
+      event.stopPropagation();
+    }
+  });
+}
+
+/**
+ * Configura validación de formularios
+ */
+function setupFormValidation() {
+  // Validar formulario de registro
+  const registerForm = document.getElementById('register-form');
+  if (registerForm) {
+    registerForm.addEventListener('submit', function(e) {
+      if (!this.checkValidity()) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      this.classList.add('was-validated');
     });
-
-    document.querySelectorAll('.switch-to-login').forEach(link => {
-        link.addEventListener('click', (e) => {
-            e.preventDefault();
-            bootstrap.Modal.getInstance(document.getElementById('registerModal')).hide();
-            new bootstrap.Modal(document.getElementById('loginModal')).show();
-        });
+  }
+  
+  // Validar formulario de login
+  const loginForm = document.getElementById('login-form');
+  if (loginForm) {
+    loginForm.addEventListener('submit', function(e) {
+      if (!this.checkValidity()) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      this.classList.add('was-validated');
     });
-
-    const curpRegisterModal = document.getElementById('curp-register-modal');
-    if (curpRegisterModal) {
-        const curpFeedbackDiv = document.createElement('div');
-        const nombreRegistro = document.getElementById('first-name-modal');
-        const apellidoPaterno = document.getElementById('last-name-modal');
-        const apellidoMaterno = document.getElementById('second-last-name-modal');
-
-        // Función para generar las primeras letras del CURP
-        function generarInicioCURP() {
-            if (!apellidoPaterno.value || !apellidoMaterno.value || !nombreRegistro.value) return;
-
-            // Limpiar y convertir a mayúsculas
-            const ap = limpiarTexto(apellidoPaterno.value.toUpperCase());
-            const am = limpiarTexto(apellidoMaterno.value.toUpperCase());
-            const nombre = limpiarTexto(nombreRegistro.value.toUpperCase());
-            const curpHelp = document.getElementById('curp-help');
-
-
-            if (ap.length < 2 || am.length < 1 || nombre.length < 1) return;
-
-            // Primera letra del apellido paterno
-            let curpGenerado = ap.charAt(0);
-
-            // Primera vocal del apellido paterno
-            let vocal = '';
-            for (let i = 1; i < ap.length; i++) {
-                if ("AEIOU".includes(ap.charAt(i))) {
-                    vocal = ap.charAt(i);
-                    break;
-                }
-            }
-            curpGenerado += vocal || 'X';
-
-            // Primera letra del apellido materno
-            curpGenerado += am.charAt(0);
-
-            // Primera letra del nombre
-            curpGenerado += nombre.charAt(0);
-
-            // Colocar en el campo CURP
-            curpRegisterModal.value = curpGenerado;
-
-            // Disparar el evento input para activar la validación
-            curpRegisterModal.dispatchEvent(new Event('input'));
-
-            if (curpHelp) {
-                curpHelp.innerHTML = 'Se han generado las primeras 4 letras. Por favor completa los 14 caracteres restantes (fecha de nacimiento, sexo, estado, etc.)';
-            }
-        }
-
-        // Función para limpiar texto (eliminar acentos y caracteres especiales)
-        function limpiarTexto(texto) {
-            return texto
-                .normalize("NFD")
-                .replace(/[\u0300-\u036f]/g, "")  // Eliminar acentos
-                .replace(/[^A-Z]/g, "");  // Solo letras mayúsculas
-        }
-
-        // Añadir eventos para detectar cambios en los campos de nombre
-        nombreRegistro.addEventListener('blur', generarInicioCURP);
-        apellidoPaterno.addEventListener('blur', generarInicioCURP);
-        apellidoMaterno.addEventListener('blur', generarInicioCURP);
-
-        curpFeedbackDiv.id = 'modal-curp-feedback';
-        curpFeedbackDiv.className = 'mt-0 mb-3';
-        curpRegisterModal.parentNode.parentNode.insertBefore(curpFeedbackDiv,
-            curpRegisterModal.parentNode.nextSibling);
-
-        curpRegisterModal.addEventListener('input', () => {
-            curpRegisterModal.value = curpRegisterModal.value.toUpperCase();
-            if (curpRegisterModal.value.length === 18) {
-                const validacion = validarCURP(curpRegisterModal.value);
-                const color = validacion.isValid ? 'green' : 'red';
-                const icon = validacion.isValid ? '✓' : '✗';
-                curpFeedbackDiv.innerHTML = `<div style="color: ${color}; margin: 3px 0;"><span>${icon}</span> ${validacion.message}</div>`;
-            } else if (curpRegisterModal.value.length > 0) {
-                curpFeedbackDiv.innerHTML = `<div style="color: orange; margin: 3px 0;"><span>⚠️</span> El CURP debe tener 18 caracteres (tienes ${curpRegisterModal.value.length})</div>`;
-            } else {
-                curpFeedbackDiv.innerHTML = '';
-            }
-        });
-    }
-
-
-
-    // Agregar validación de contraseña
-    const passwordRegisterModal = document.getElementById('password-register-modal');
-
-    if (passwordRegisterModal) {
-        // Crear contenedor para feedback de contraseña
-        const feedbackDiv = document.createElement('div');
-        feedbackDiv.id = 'modal-password-feedback';
-        feedbackDiv.className = 'mt-0 mb-3';
-        passwordRegisterModal.parentNode.parentNode.insertBefore(feedbackDiv,
-            passwordRegisterModal.parentNode.nextSibling);
-
-        // Validar contraseña en tiempo real
-        passwordRegisterModal.addEventListener('input', () => {
-            const passwordCheck = isPasswordSecure(passwordRegisterModal.value);
-            document.getElementById('modal-password-feedback').innerHTML = passwordCheck.requirementsHTML;
-        });
-    }
-
-    // Validar email en tiempo real
-    const emailRegisterModal = document.getElementById('email-register-modal');
-    if (emailRegisterModal) {
-        const emailFeedbackDiv = document.createElement('div');
-        emailFeedbackDiv.id = 'modal-email-feedback';
-        emailFeedbackDiv.className = 'mt-0 mb-3';
-        emailRegisterModal.parentNode.parentNode.insertBefore(emailFeedbackDiv,
-            emailRegisterModal.parentNode.nextSibling);
-
-        emailRegisterModal.addEventListener('input', () => {
-            const isValid = emailRegisterModal.value.includes('@');
-            const color = isValid ? 'green' : 'red';
-            const icon = isValid ? '✓' : '✗';
-            emailFeedbackDiv.innerHTML = `<div style="color: ${color}; margin: 3px 0;"><span>${icon}</span> Debe contener @</div>`;
-        });
-    }
-
-    // Modificación en components.js
-    const loginForm = document.getElementById('login-modal-form');
-    if (loginForm) {
-        loginForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-
-            const email = document.getElementById('email-modal').value;
-            const password = document.getElementById('password-modal').value;
-
-            try {
-                const response = await fetch('/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
-                });
-
-                const data = await response.json();
-
-                if (response.ok) {
-                    // Guardar siempre en localStorage
-                    localStorage.setItem('token', data.token);
-                    localStorage.setItem('username', data.usuario.nombre);
-
-                    // Cerrar modal
-                    bootstrap.Modal.getInstance(document.getElementById('loginModal')).hide();
-
-                    // Actualizar UI
-                    updateAuthUI();
-
-                    Swal.fire({
-                        icon: 'success',
-                        title: '¡Bienvenido!',
-                        text: 'Has iniciado sesión correctamente',
-                        timer: 2000,
-                        showConfirmButton: false
-                    });
-                } else {
-                    throw new Error(data.message || 'Error de autenticación');
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: error.message || 'Error al iniciar sesión'
-                });
-            }
-        });
-    }
-
-    // Inicializar formulario de registro
-    const registerForm = document.getElementById('register-modal-form');
-    if (registerForm) {
-        registerForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-
-            const name = document.getElementById('first-name-modal').value;
-            const lastName = document.getElementById('last-name-modal').value;
-            const secondLastName = document.getElementById('second-last-name-modal').value;
-            const curp = document.getElementById('curp-register-modal').value;
-            const email = document.getElementById('email-register-modal').value;
-            const password = document.getElementById('password-register-modal').value;
-            const confirmPassword = document.getElementById('confirm-password-modal').value;
-
-            // Validar CURP
-            const curpValidation = validarCURP(curp);
-            if (!curpValidation.isValid) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'CURP inválido',
-                    text: curpValidation.message
-                });
-                return;
-            }
-
-            if (password !== confirmPassword) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'Las contraseñas no coinciden'
-                });
-                return;
-            }
-
-            // Validar contraseña
-            const passwordCheck = isPasswordSecure(password);
-            if (!passwordCheck.isValid) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Contraseña insegura',
-                    text: 'Tu contraseña no cumple con los requisitos de seguridad'
-                });
-                return;
-            }
-
-            if (password !== confirmPassword) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error de validación',
-                    text: 'Las contraseñas no coinciden'
-                });
-                return;
-            }
-
-            const userData = {
-                name: name,
-                lastName: lastName,
-                secondLastName: secondLastName,
-                curp: curp,
-                email: email,
-                password: password,
-                confirmPassword: confirmPassword
-            };
-
-            try {
-                const response = await fetch('/register', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(userData)
-                });
-
-                const data = await response.json();
-
-                if (response.ok) {
-                    // Cerrar modal
-                    bootstrap.Modal.getInstance(document.getElementById('registerModal')).hide();
-
-                    Swal.fire({
-                        icon: 'success',
-                        title: '¡Registro exitoso!',
-                        text: 'Ahora puedes iniciar sesión',
-                        showConfirmButton: true
-                    }).then(() => {
-                        new bootstrap.Modal(document.getElementById('loginModal')).show();
-                    });
-                } else {
-                    throw new Error(data.message || 'Error en el registro');
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: error.message || 'Error al registrar usuario'
-                });
-            }
-        });
-    }
+  }
+  
+  // Agregar validación en tiempo real de contraseñas
+  setupPasswordValidation();
 }
 
+/**
+ * Configura validación de contraseñas en tiempo real
+ */
+function setupPasswordValidation() {
+  const passwordInputs = document.querySelectorAll('input[type="password"]');
+  
+  passwordInputs.forEach(input => {
+    input.addEventListener('input', function() {
+      if (this.id.includes('password') || this.id.includes('Password')) {
+        validatePassword(this);
+      }
+    });
+  });
+}
+
+/**
+ * Valida una contraseña y muestra feedback
+ */
+function validatePassword(input) {
+  const password = input.value;
+  const result = isPasswordSecure(password);
+  
+  // Identificar el elemento de feedback
+  let feedbackId = input.id + '-feedback';
+  if (!document.getElementById(feedbackId)) {
+    feedbackId = 'password-feedback';
+  }
+  
+  const feedbackElement = document.getElementById(feedbackId);
+  if (feedbackElement) {
+    feedbackElement.innerHTML = result.requirementsHTML;
+    
+    // Aplicar clases basadas en la validez
+    if (result.isValid) {
+      input.classList.add('is-valid');
+      input.classList.remove('is-invalid');
+    } else if (password.length > 0) {
+      input.classList.add('is-invalid');
+      input.classList.remove('is-valid');
+    } else {
+      input.classList.remove('is-valid');
+      input.classList.remove('is-invalid');
+    }
+  }
+}
+
+/**
+ * Verifica si una contraseña cumple con los requisitos de seguridad
+ */
 function isPasswordSecure(password) {
-    const requirements = [
-        {
-            check: password.length >= 8,
-            message: 'Al menos 8 caracteres'
-        },
-        {
-            check: /[A-Z]/.test(password),
-            message: 'Al menos una mayúscula'
-        },
-        {
-            check: /[a-z]/.test(password),
-            message: 'Al menos una minúscula'
-        },
-        {
-            check: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password),
-            message: 'Al menos un carácter especial'
-        },
-        {
-            check: !/012|123|234|345|456|567|678|789|987|876|765|654|543|432|321|210/.test(password),
-            message: 'Sin secuencias numéricas'
-        },
-        {
-            check: !/abc|bcd|cde|def|efg|fgh|ghi|hij|ijk|jkl|klm|lmn|mno|nop|opq|pqr|qrs|rst|stu|tuv|uvw|vwx|wxy|xyz/i.test(password),
-            message: 'Sin secuencias alfabéticas'
-        }
-    ];
+  const requirements = [
+    {
+      check: password.length >= 8,
+      message: 'Al menos 8 caracteres'
+    },
+    {
+      check: /[A-Z]/.test(password),
+      message: 'Al menos una mayúscula'
+    },
+    {
+      check: /[a-z]/.test(password),
+      message: 'Al menos una minúscula'
+    },
+    {
+      check: /[0-9]/.test(password),
+      message: 'Al menos un número'
+    },
+    {
+      check: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password),
+      message: 'Al menos un carácter especial'
+    },
+    {
+      check: !/012|123|234|345|456|567|678|789|987|876|765|654|543|432|321|210/.test(password),
+      message: 'Sin secuencias numéricas'
+    },
+    {
+      check: !/abc|bcd|cde|def|efg|fgh|ghi|hij|ijk|jkl|klm|lmn|mno|nop|opq|pqr|qrs|rst|stu|tuv|uvw|vwx|wxy|xyz/i.test(password),
+      message: 'Sin secuencias alfabéticas'
+    }
+  ];
 
-    // Generate HTML for requirements
-    let requirementsHTML = '<div class="password-requirements">';
-    let allValid = true;
+  // Generar HTML para los requisitos
+  let requirementsHTML = '<div class="password-requirements">';
+  let allValid = true;
 
-    requirements.forEach(req => {
-        const color = req.check ? 'green' : 'red';
-        const icon = req.check ? '✓' : '✗';
-        requirementsHTML += `<div style="color: ${color}; margin: 3px 0;"><span>${icon}</span> ${req.message}</div>`;
-        if (!req.check) allValid = false;
-    });
+  requirements.forEach(req => {
+    const color = req.check ? 'green' : 'red';
+    const icon = req.check ? '✓' : '✗';
+    requirementsHTML += `<div style="color: ${color}; margin: 3px 0;"><span>${icon}</span> ${req.message}</div>`;
+    if (!req.check) allValid = false;
+  });
 
-    requirementsHTML += '</div>';
+  requirementsHTML += '</div>';
 
-    return {
-        isValid: allValid,
-        message: 'Contraseña segura',
-        requirementsHTML: requirementsHTML,
-        failedChecks: requirements.filter(req => !req.check).length
-    };
+  return {
+    isValid: allValid,
+    message: 'Contraseña segura',
+    requirementsHTML: requirementsHTML,
+    failedChecks: requirements.filter(req => !req.check).length
+  };
 }
+
+/**
+ * Crea un componente de tarjeta de propiedad
+ */
+function createPropertyCard(property) {
+  const template = document.getElementById('property-card-template');
+  if (!template) return null;
+  
+  const isAvailable = property.disponible === 1 || property.disponible === true;
+  
+  // Clonar template y reemplazar variables
+  const templateContent = template.innerHTML
+    .replace('${image}', property.imagen || '/static/imgs/default-property.jpg')
+    .replace('${name}', property.nombre)
+    .replace('${address}', property.direccion || 'Sin dirección')
+    .replace('${description}', property.descripcion || 'Sin descripción')
+    .replace('${price}', property.precio)
+    .replace('${id}', property.id)
+    .replace('${availableBadgeDisplay}', isAvailable ? 'none' : 'block')
+    .replace('${rentBtnDisplay}', isAvailable ? 'block' : 'none')
+    .replace('${notAvailableBtnDisplay}', isAvailable ? 'none' : 'block');
+  
+  // Crear el elemento del DOM
+  const tempDiv = document.createElement('div');
+  tempDiv.innerHTML = templateContent;
+  
+  return tempDiv.firstElementChild;
+}
+
+/**
+ * Actualiza la UI basada en el estado de autenticación
+ */
+function updateAuthUI() {
+  const token = localStorage.getItem('authToken');
+  const authRequired = document.querySelectorAll('.auth-required');
+  const authNotRequired = document.querySelectorAll('.auth-not-required');
+  
+  if (token) {
+    // Usuario autenticado
+    authRequired.forEach(el => el.style.display = 'block');
+    authNotRequired.forEach(el => el.style.display = 'none');
+    actualizarDatosUsuario();
+  } else {
+    // Usuario no autenticado
+    authRequired.forEach(el => el.style.display = 'none');
+    authNotRequired.forEach(el => el.style.display = 'block');
+  }
+}
+
+/**
+ * Actualiza los datos del usuario en la UI
+ */
+function actualizarDatosUsuario() {
+  const userDataString = localStorage.getItem('usuarioData');
+  if (!userDataString) return;
+  
+  try {
+    const userData = JSON.parse(userDataString);
+    const usernameDisplay = document.getElementById('username-display');
+    if (usernameDisplay) {
+      usernameDisplay.textContent = userData.nombre || 'Usuario';
+    }
+    
+    // Actualizar imagen de perfil
+    actualizarImagenUsuario();
+  } catch (e) {
+    console.error('Error al parsear datos de usuario:', e);
+  }
+}
+
+/**
+ * Actualiza la imagen del usuario
+ */
+function actualizarImagenUsuario() {
+  const userImage = localStorage.getItem('user_image');
+  const userImages = document.querySelectorAll('.user-img');
+  
+  userImages.forEach(img => {
+    if (userImage) {
+      img.src = userImage;
+    } else {
+      img.src = '/static/imgs/user.gif';
+    }
+  });
+}
+
+// Función de debounce para evitar llamadas excesivas
+function debounce(func, wait) {
+  let timeout;
+  return function() {
+    const context = this;
+    const args = arguments;
+    clearTimeout(timeout);
+    timeout = setTimeout(() => {
+      func.apply(context, args);
+    }, wait);
+  };
+}
+
+// Exportar funciones para uso en otros scripts
+window.components = {
+  createPropertyCard,
+  updateAuthUI,
+  debounce,
+  isPasswordSecure
+};
