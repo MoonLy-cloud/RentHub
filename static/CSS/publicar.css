@@ -1,0 +1,133 @@
+/* Estilos para la página de publicar */
+
+/* Mapa de ubicación */
+.map-container {
+    width: 100%;
+    height: 300px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    transition: all 0.3s ease;
+}
+
+.map-container:hover {
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Personalización del Geocoder de Mapbox */
+.mapboxgl-ctrl-geocoder {
+    width: 100% !important;
+    max-width: 100% !important;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1) !important;
+    font-family: inherit;
+}
+
+.mapboxgl-ctrl-geocoder input[type="text"] {
+    height: 46px;
+    font-size: 1rem;
+    padding-left: 40px;
+}
+
+.mapboxgl-ctrl-geocoder--icon {
+    top: 12px;
+}
+
+.mapboxgl-ctrl-geocoder--button {
+    top: 8px;
+}
+
+/* Geocodificador personalizado para ocupar todo el ancho */
+.geocoder {
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+/* Vista previa de imagen */
+.image-preview-container {
+    position: relative;
+    max-width: 100%;
+    overflow: hidden;
+    border-radius: 8px;
+    margin-top: 10px;
+}
+
+.image-preview {
+    display: none;
+    max-width: 100%;
+    max-height: 300px;
+    margin: 0 auto;
+    border-radius: 8px;
+    object-fit: contain;
+    transition: transform 0.3s ease;
+}
+
+.image-preview.active {
+    display: block;
+}
+
+.image-preview:hover {
+    transform: scale(1.02);
+}
+
+/* Campos requeridos */
+.required-field::after {
+    content: "*";
+    color: #dc3545;
+    margin-left: 4px;
+}
+
+/* Animaciones y transiciones */
+.card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05) !important;
+}
+
+.form-control:focus, .btn:focus {
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+/* Ajustes para el control de disponibilidad */
+.form-check-input:checked[type="radio"] {
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
+}
+
+/* Tooltip para lugares */
+.mapboxgl-popup {
+    max-width: 300px;
+}
+
+.mapboxgl-popup-content {
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Estilos responsivos */
+@media (max-width: 768px) {
+    .map-container {
+        height: 250px;
+    }
+    
+    .mapboxgl-ctrl-geocoder input[type="text"] {
+        height: 40px;
+        font-size: 0.9rem;
+    }
+}
+
+/* Animación de carga para obtener dirección */
+@keyframes spinner-border {
+    to { transform: rotate(360deg); }
+}
+
+.spin {
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    border-radius: 50%;
+    animation: spinner-border 0.75s linear infinite;
+}

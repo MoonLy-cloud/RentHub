@@ -1,0 +1,282 @@
+<!-- Modal de Inicio de Sesión -->
+<div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title" id="loginModalLabel">Iniciar Sesión</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body p-4">
+        <form id="login-modal-form">
+          <div class="mb-4">
+            <label for="email-modal" class="form-label">Correo electrónico</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+              <input type="email" class="form-control" id="email-modal" placeholder="ejemplo@correo.com" required>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <label for="password-modal" class="form-label">Contraseña</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-lock"></i></span>
+              <input type="password" class="form-control" id="password-modal" required>
+            </div>
+          </div>
+
+          <div class="d-grid gap-2">
+            <button type="submit" class="btn btn-primary py-2">Iniciar Sesión</button>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer justify-content-center bg-light">
+        <p class="text-center mb-0">
+          ¿No tienes cuenta?
+          <a href="#" class="switch-to-register text-primary fw-bold">Regístrate aquí</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Registro -->
+<div class="modal fade" id="registerModal" tabindex="-1" aria-labelledby="registerModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title" id="registerModalLabel">Crear cuenta nueva</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body p-4">
+        <form id="register-modal-form">
+          <div class="row mb-3">
+            <div class="col-md-4 mb-3 mb-md-0">
+              <label for="first-name-modal" class="form-label">Nombre</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-person"></i></span>
+                <input type="text" class="form-control" id="first-name-modal" required>
+              </div>
+            </div>
+            <div class="col-md-4 mb-3 mb-md-0">
+              <label for="last-name-modal" class="form-label">Apellido Paterno</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-person"></i></span>
+                <input type="text" class="form-control" id="last-name-modal" required>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <label for="second-last-name-modal" class="form-label">Apellido Materno</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-person"></i></span>
+                <input type="text" class="form-control" id="second-last-name-modal" required>
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label for="curp-register-modal" class="form-label">CURP</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-card-text"></i></span>
+              <input type="text" class="form-control" id="curp-register-modal" maxlength="18" required>
+            </div>
+            <div id="curp-help" class="form-text">Se generarán las primeras 4 letras automáticamente.</div>
+          </div>
+
+          <div class="mb-3">
+            <label for="email-register-modal" class="form-label">Correo electrónico</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+              <input type="email" class="form-control" id="email-register-modal" required>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label for="password-register-modal" class="form-label">Contraseña</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-lock"></i></span>
+              <input type="password" class="form-control" id="password-register-modal" required>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <label for="confirm-password-modal" class="form-label">Confirmar Contraseña</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
+              <input type="password" class="form-control" id="confirm-password-modal" required>
+            </div>
+          </div>
+
+          <div class="d-grid gap-2">
+            <button type="submit" class="btn btn-primary py-2">Registrarme</button>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer justify-content-center bg-light">
+        <p class="text-center mb-0">
+          ¿Ya tienes cuenta?
+          <a href="#" class="switch-to-login text-primary fw-bold">Inicia sesión aquí</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de edición de propiedad -->
+<div class="modal fade" id="editarPropiedadModal" tabindex="-1" aria-labelledby="editarPropiedadModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title" id="editarPropiedadModalLabel">Editar Propiedad</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body p-4">
+        <form id="editar-propiedad-form">
+          <input type="hidden" id="editar-propiedad-id">
+
+          <div class="mb-3">
+            <label for="editar-nombre" class="form-label">Nombre de la propiedad</label>
+            <input type="text" class="form-control" id="editar-nombre" required>
+          </div>
+
+          <div class="mb-3">
+            <label for="editar-direccion" class="form-label">Dirección</label>
+            <input type="text" class="form-control mb-2" id="editar-direccion" required>
+
+            <div id="map-container" class="rounded" style="height: 300px;"></div>
+            <small class="form-text text-muted">Mueve el marcador para actualizar la dirección</small>
+          </div>
+
+          <div class="mb-3">
+            <label for="editar-descripcion" class="form-label">Descripción</label>
+            <textarea class="form-control" id="editar-descripcion" rows="3" required></textarea>
+          </div>
+
+          <div class="mb-3">
+            <label for="editar-precio" class="form-label">Precio</label>
+            <div class="input-group">
+              <span class="input-group-text">$</span>
+              <input type="number" class="form-control" id="editar-precio" min="0" step="0.01" required>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Imágenes de la propiedad</label>
+            <div class="input-group mb-2">
+              <input type="file" class="form-control" id="editar-imagen-file" accept="image/*">
+              <button class="btn btn-outline-primary" type="button" id="btn-agregar-imagen">Agregar</button>
+            </div>
+
+            <div id="galeria-imagenes" class="d-flex flex-wrap gap-2 mt-2">
+              <!-- Las imágenes se añadirán aquí dinámicamente -->
+            </div>
+
+            <input type="hidden" id="editar-imagen" value="">
+          </div>
+
+          <div class="form-check form-switch mb-3">
+            <input class="form-check-input" type="checkbox" id="editar-disponible">
+            <label class="form-check-label" for="editar-disponible">Disponible para renta</label>
+          </div>
+
+          <div class="d-flex justify-content-end gap-2">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-primary">Guardar cambios</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal para ver detalles de propiedad -->
+<div class="modal fade" id="verDetallesModal" tabindex="-1" aria-labelledby="verDetallesModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title" id="verDetallesModalLabel">Detalles de la Propiedad</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body p-0">
+        <!-- Carrusel de imágenes -->
+        <div id="carouselImagenes" class="carousel slide" data-bs-ride="carousel">
+          <div class="carousel-inner" id="carousel-inner-detalles">
+            <!-- Las imágenes se cargarán dinámicamente -->
+          </div>
+          <button class="carousel-control-prev" type="button" data-bs-target="#carouselImagenes" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Anterior</span>
+          </button>
+          <button class="carousel-control-next" type="button" data-bs-target="#carouselImagenes" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Siguiente</span>
+          </button>
+        </div>
+
+        <!-- Información de la propiedad -->
+        <div class="p-4">
+          <h4 id="detalles-nombre" class="mb-3">Nombre de la Propiedad</h4>
+
+          <div class="d-flex align-items-center mb-3">
+            <i class="bi bi-geo-alt text-primary me-2 fs-5"></i>
+            <p id="detalles-direccion" class="mb-0">Dirección</p>
+          </div>
+
+          <div class="mb-4">
+            <h5 class="mb-2">Descripción</h5>
+            <p id="detalles-descripcion">Descripción de la propiedad</p>
+          </div>
+
+          <div class="row g-4 mb-4">
+            <div class="col-md-6">
+              <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body">
+                  <h5 class="card-title text-primary mb-3">Precio</h5>
+                  <p class="card-text fs-4 fw-bold">$<span id="detalles-precio">0</span></p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body">
+                  <h5 class="card-title text-primary mb-3">Disponibilidad</h5>
+                  <p class="card-text" id="detalles-disponible">
+                    <span class="badge bg-success">Disponible</span>
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Información de contacto -->
+          <div class="card border-0 shadow-sm mb-3">
+            <div class="card-body">
+              <h5 class="card-title text-primary mb-3">Contacto del propietario</h5>
+              <div id="detalles-contacto">
+                <div class="d-flex align-items-center mb-2">
+                  <i class="bi bi-envelope me-2 text-primary"></i>
+                  <span id="detalles-correo">correo@ejemplo.com</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Ubicación en mapa -->
+          <div class="card border-0 shadow-sm mb-3">
+            <div class="card-body">
+              <h5 class="card-title text-primary mb-3">Ubicación</h5>
+              <div id="mapa-detalles" style="height: 300px;" class="rounded"></div>
+            </div>
+          </div>
+
+          <div class="d-grid gap-2">
+            <a id="detalles-correo-link" href="mailto:" class="btn btn-primary">
+              <i class="bi bi-envelope me-2"></i> Contactar al propietario
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">

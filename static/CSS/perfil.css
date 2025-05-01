@@ -1,0 +1,105 @@
+/* Estilos para el perfil de usuario */
+.paypal-badge {
+    width: 50px;
+    height: 50px;
+    background-color: #003087;
+    color: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#paypal-status {
+    background-color: #f8f9fa;
+    border-radius: 10px;
+    padding: 15px;
+}
+
+/* Navegación con pestañas */
+.nav-tabs .nav-link {
+    color: #6c757d;
+    border-radius: 0;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.nav-tabs .nav-link:hover {
+    color: #0d6efd;
+    background-color: rgba(13, 110, 253, 0.05);
+}
+
+.nav-tabs .nav-link.active {
+    color: #0d6efd;
+    font-weight: 500;
+    border-bottom: 3px solid #0d6efd;
+    background-color: transparent;
+}
+
+/* Estilos para cards */
+.card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.05) !important;
+}
+
+/* Estilos para imagen de perfil */
+#imagen-perfil-actual {
+    transition: all 0.3s ease;
+    border: 4px solid white;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+#imagen-perfil-actual:hover {
+    transform: scale(1.05);
+}
+
+#btn-cambiar-imagen {
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+
+/* Estadísticas en cards */
+.payment-stat {
+    transition: transform 0.3s ease;
+}
+
+.payment-stat:hover {
+    transform: translateY(-5px);
+}
+
+/* Feedback para contraseña */
+#perfil-password-feedback {
+    font-size: 0.875rem;
+}
+
+#perfil-password-feedback .password-requirements {
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    padding: 8px;
+    font-size: 0.8rem;
+    background-color: #f8f9fa;
+}
+
+/* Ajustes para móviles */
+@media (max-width: 768px) {
+    .nav-tabs .nav-link {
+        padding: 0.5rem;
+        font-size: 0.85rem;
+    }
+    
+    .nav-link i {
+        display: block;
+        text-align: center;
+        margin-bottom: 5px;
+        font-size: 1.2rem;
+    }
+}

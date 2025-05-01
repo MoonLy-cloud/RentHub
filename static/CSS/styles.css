@@ -1,0 +1,56 @@
+.custom-header {
+    color: #007bff;
+    text-align: center;
+    margin-top: 20px;
+}
+.custom-paragraph {
+    color: #6c757d;
+    text-align: justify;
+}
+.user-img {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 50%;
+}
+/* Mejoras para la barra de navegación */
+.navbar .nav-item {
+    display: flex;
+    align-items: center;
+}
+
+.navbar .nav-link {
+    display: flex;
+    align-items: center;
+}
+
+/* Estilos para la barra de navegación */
+.user-profile-active {
+    display: flex !important;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    background-color: rgba(0,0,0,0.05);
+}
+
+.user-img {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    margin-right: 8px;
+    object-fit: cover;
+}
+
+#username-display {
+    font-weight: 500;
+    margin-left: 5px;
+}
+
+.logout-btn-container {
+    margin-left: 10px;
+}
+
+.auth-required .btn-outline-danger {
+    white-space: nowrap;
+}
+
