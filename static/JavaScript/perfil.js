@@ -587,7 +587,7 @@ function cargarMisPropiedades() {
                                 ${disponibleBadge}
                             </div>
                             <p class="card-text text-truncate">${propiedad.direccion}</p>
-                            <p class="card-text"><strong>$${propiedad.precio}</strong> /mes</p>
+                            <p class="card-text"><strong>$${propiedad.precio}</strong> /Por evento</p>
                         </div>
                         <div class="card-footer bg-white border-0 pt-0">
                             <div class="d-flex justify-content-between">

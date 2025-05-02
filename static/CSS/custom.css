@@ -17,12 +17,30 @@
     min-height: 50px !important;
 }
 
-/* Añadir al archivo static/CSS/custom.css */
+/* Estilos completamente renovados para el logo del navbar */
 .navbar-logo {
-    width: auto;
-    height: 40px; /* Aumenta la altura según necesites */
-    max-height: 45px;
+    width: auto !important;
+    height: 40px !important; /* Altura mucho más pequeña y controlada */
+    max-height: 40px !important;
+    object-fit: contain !important; /* Fuerza mantener proporciones */
+    object-position: left center; /* Alinea a la izquierda */
+    display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
     transition: transform 0.3s ease;
+}
+
+/* Contenedor del logo para asegurar proporciones */
+.navbar-brand {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    padding: 0 !important;
+    margin-right: 1.5rem !important;
+    height: auto !important;
+    width: auto !important;
+    max-width: 120px !important; /* Limitar ancho máximo */
+    overflow: visible !important;
 }
 
 /* Efecto hover opcional */
@@ -33,7 +51,12 @@
 /* Para dispositivos móviles */
 @media (max-width: 768px) {
     .navbar-logo {
-        height: 35px; /* Ligeramente más pequeño en móviles */
+        height: 30px !important; /* Aún más pequeño en móviles */
+        max-width: 90px !important;
+    }
+    
+    .navbar-brand {
+        max-width: 90px !important;
     }
 }
 
@@ -46,11 +69,6 @@
 .navbar-brand img {
     width: 140px; /* Aumentar de acuerdo al tamaño deseado */
     height: auto;
-}
-
-.navbar-brand {
-    font-size: 1.75rem; /* Si el logo es texto, aumentar el tamaño de fuente */
-    padding: 0;
 }
 
 /* Si el logo está en un contenedor específico, también puedes apuntar a ese contenedor */
